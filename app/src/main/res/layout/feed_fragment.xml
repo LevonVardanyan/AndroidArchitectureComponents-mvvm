@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="android.view.View.OnClickListener" />
+
+        <variable
+            name="viewmodel"
+            type="dev.sololearn.test.feed.FeedViewModel" />
+
+        <variable
+            name="listener"
+            type="dev.sololearn.test.feed.FeedFragment" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:orientation="vertical"
+            tools:context=".feed.FeedActivity"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintTop_toTopOf="@+id/root">
+
+            <LinearLayout
+                android:id="@+id/pinned_items_container"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                >
+
+                <TextView
+                    android:id="@+id/title_pinned_articles"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/pinned_articles"
+                    android:textColor="@android:color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:id="@+id/top_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="16dp"
+                    android:alpha="0.2"
+                    android:background="@android:color/black" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/pinned_items_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/pinned_items_recycler_view_margin_top"
+                    android:descendantFocusability="blocksDescendants" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/title_all_articles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/articles"
+                android:textColor="@android:color/black"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/root"
+                app:layout_constraintTop_toBottomOf="@+id/pinned_items_container" />
+
+            <View
+                android:id="@+id/bottom_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="16dp"
+                android:alpha="0.5"
+                android:background="@android:color/black"
+                app:layout_constraintStart_toStartOf="@+id/root"
+                app:layout_constraintTop_toBottomOf="@+id/title_all_articles" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/articles_recycler_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/no_articles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/no_articles"
+            android:textColor="@android:color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:visibility="@{viewmodel.isEmpty ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/root"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintTop_toTopOf="@+id/root" />
+
+        <TextView
+            android:id="@+id/no_internet_connection"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/no_internet_connection_height"
+            android:alpha="0"
+            android:background="@drawable/no_internet_connection_bg"
+            android:gravity="center"
+            android:text="@string/no_internet_connection"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root" />
+
+        <FrameLayout
+            android:id="@+id/show_article_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ProgressBar
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewmodel.isDataLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/root"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintTop_toTopOf="@+id/root" />
+
+        <TextView
+            android:id="@+id/new_articles_available"
+            android:layout_width="@dimen/new_articles_available_hint_view_width"
+            android:layout_height="@dimen/new_articles_available_hint_view_height"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0"
+            android:background="@drawable/new_articles_available_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="@{(view) -> listener.onClick(view)}"
+            android:text="@string/new_articles"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/no_internet_connection"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root" />
+
+        <FrameLayout
+            android:id="@+id/open_article_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="false"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

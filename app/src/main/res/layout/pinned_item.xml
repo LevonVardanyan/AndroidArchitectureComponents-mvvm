@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View.OnClickListener" />
+
+        <import type="dev.sololearn.test.util.Constants" />
+
+        <variable
+            name="article"
+            type="dev.sololearn.test.datamodel.local.Article" />
+
+        <variable
+            name="listener"
+            type="dev.sololearn.test.feed.pinned.PinnedItemsAdapter.ArticleActionListener" />
+    </data>
+
+    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/root_card"
+        android:layout_width="@dimen/pinned_item_size"
+        android:layout_height="@dimen/pinned_item_size"
+        android:layout_marginStart="@dimen/pinned_item_margins_left_right"
+        android:layout_marginEnd="@dimen/pinned_item_margins_left_right"
+        android:layout_marginBottom="@dimen/pinned_item_margin_bottom"
+        android:onClick="@{() ->listener.onArticleClicked(article)}"
+        app:cardElevation="4dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/root"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/pinned_article_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/pinned_item_image_height"
+                android:scaleType="fitCenter"
+                app:layout_constraintLeft_toLeftOf="@+id/root"
+                app:layout_constraintTop_toTopOf="@+id/root" />
+
+            <TextView
+                android:id="@+id/pinned_article_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/pinned_item_title_margin_top_bottom"
+                android:ellipsize="end"
+                android:gravity="start"
+                android:lines="1"
+                android:paddingStart="@dimen/pinned_item_title_padding_left_right"
+                android:paddingEnd="@dimen/pinned_item_title_padding_left_right"
+                android:singleLine="true"
+                android:text="@{article.title}"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@+id/root"
+                app:layout_constraintTop_toBottomOf="@+id/pinned_article_thumbnail"
+                tools:text="This is a test pinned article" />
+
+            <TextView
+                android:id="@+id/pinned_article_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pinned_item_title_padding_left_right"
+                android:layout_marginTop="@dimen/pinned_item_title_margin_top_bottom"
+                android:layout_marginEnd="@dimen/pinned_item_title_padding_left_right"
+                android:layout_marginBottom="@dimen/pinned_item_title_margin_top_bottom"
+                android:text="@{article.category}"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/root"
+                app:layout_constraintLeft_toLeftOf="@+id/pinned_article_thumbnail"
+                app:layout_constraintTop_toBottomOf="@+id/pinned_article_title"
+                tools:text="Test category" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>

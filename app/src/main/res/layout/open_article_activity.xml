@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="android.view.View.OnClickListener" />
+
+
+        <variable
+            name="article"
+            type="dev.sololearn.test.datamodel.local.Article" />
+
+        <variable
+            name="listener"
+            type="dev.sololearn.test.openarticle.OpenArticleFragment" />
+
+        <variable
+            name="saved"
+            type="androidx.databinding.ObservableBoolean" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white">
+
+        <ImageView
+            android:id="@+id/article_thumbnail"
+            android:layout_width="360dp"
+            android:layout_height="@dimen/open_article_image_height"
+            android:layout_marginTop="@dimen/open_article_image_margin_top"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintTop_toTopOf="@+id/root" />
+
+        <TextView
+            android:id="@+id/article_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/open_article_title_margin_end_start"
+            android:layout_marginTop="@dimen/open_article_title_margin_top"
+            android:layout_marginEnd="@dimen/open_article_title_margin_end_start"
+            android:gravity="start"
+            android:text="@{article.title}"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/article_thumbnail"
+            app:layout_constraintTop_toBottomOf="@+id/article_thumbnail"
+            tools:text="This is a test article" />
+
+        <TextView
+            android:id="@+id/article_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/open_article_category_margin_start"
+            android:layout_marginTop="@dimen/open_article_category_margin_top_bottom"
+            android:layout_marginBottom="@dimen/open_article_category_margin_top_bottom"
+            android:gravity="start"
+            android:text="@{article.category}"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="@+id/article_thumbnail"
+            app:layout_constraintTop_toBottomOf="@+id/article_title"
+            tools:text="Test category" />
+
+        <Button
+            android:id="@+id/save_for_offline"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/open_article_btns_height"
+            android:onClick="@{(view) -> listener.onClick(view)}"
+            android:text="@{saved ? @string/saved : @string/save_for_offline}"
+            app:layout_constraintBottom_toTopOf="@+id/open_full_article"
+            app:layout_constraintEnd_toStartOf="@+id/pin_unpin_article"
+            app:layout_constraintStart_toStartOf="@+id/root" />
+
+        <Button
+            android:id="@+id/pin_unpin_article"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/open_article_btns_height"
+            android:onClick="@{(view) -> listener.onClick(view)}"
+            android:text="@{article.pinned ? @string/unpin_article : @string/pin_article}"
+            app:layout_constraintBottom_toTopOf="@+id/open_full_article"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toEndOf="@+id/save_for_offline" />
+
+
+        <Button
+            android:id="@+id/open_full_article"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/open_article_btns_height"
+            android:onClick="@{(view) -> listener.onClick(view)}"
+            android:text="@string/open_full_article"
+            app:layout_constraintBottom_toBottomOf="@+id/root" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+

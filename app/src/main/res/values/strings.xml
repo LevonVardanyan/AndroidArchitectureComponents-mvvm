@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">NewsApp</string>
+    <string name="home_page_title">Home</string>
+    <string name="title_activity_show_article">ShowArticleActivity</string>
+    <string name="open_full_article">Open full article</string>
+    <string name="article">Article</string>
+    <string name="save_for_offline">Save for offline</string>
+    <string name="saved">Saved</string>
+    <string name="pin_article">Pin article</string>
+    <string name="unpin_article">UnPin article</string>
+    <string name="pinned_articles">Pinned articles</string>
+    <string name="articles">Articles</string>
+    <string name="switch_style">Switch style</string>
+    <string name="notification_title">News</string>
+    <string name="notification_content">Fresh news are waiting for you</string>
+    <string name="no_articles">No articles</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="no_app_for_handle">No app for open url</string>
+    <string name="new_articles">New articles</string>
+</resources>

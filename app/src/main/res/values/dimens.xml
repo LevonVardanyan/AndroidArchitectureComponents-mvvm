@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<dimen name="home_page_articles_margin_top">16dp</dimen>
+	<dimen name="home_page_articles_margin_bottom">16dp</dimen>
+	<dimen name="home_page_pinned_articles_margin_right">8dp</dimen>
+	<dimen name="fab_margin">16dp</dimen>
+
+    <!--feed-->
+
+
+    <!--feed item-->
+    <dimen name="feed_item_margin_start_end">4dp</dimen>
+    <dimen name="feed_item_margin_bottom">8dp</dimen>
+    <dimen name="feed_item_thumbnail_image_height">200dp</dimen>
+    <dimen name="feed_item_elevation">4dp</dimen>
+    <dimen name="feed_item_title_margin_start_end">8dp</dimen>
+    <dimen name="feed_item_title_margin_top">8dp</dimen>
+    <dimen name="feed_item_category_margin_start_end">8dp</dimen>
+    <dimen name="feed_item_category_margin_top_bottom">8dp</dimen>
+    <dimen name="feed_item_text_size">14sp</dimen>
+    <dimen name="feed_item_grid_image_height">100dp</dimen>
+
+    <dimen name="feed_item_width">360dp</dimen>
+    <dimen name="grid_feed_item_width">180dp</dimen>
+    <dimen name="grid_feed_item_height">120dp</dimen>
+    <dimen name="grid_feed_item_image_height">0dp</dimen>
+
+    <dimen name="new_articles_available_hint_view_width">140dp</dimen>
+    <dimen name="new_articles_available_hint_view_height">40dp</dimen>
+
+    <!--pinned item-->
+	<dimen name="pinned_item_size">170dp</dimen>
+	<dimen name="pinned_item_margins_left_right">4dp</dimen>
+	<dimen name="pinned_item_margin_bottom">8dp</dimen>
+	<dimen name="pinned_item_image_height">100dp</dimen>
+	<dimen name="pinned_item_title_padding_left_right">8dp</dimen>
+	<dimen name="pinned_item_title_margin_top_bottom">8dp</dimen>
+    <dimen name="pinned_items_container_height">220dp</dimen>
+    <dimen name="pinned_items_recycler_view_margin_top">8dp</dimen>
+    <dimen name="pinned_items_container_width">0dp</dimen>
+
+
+    <!--open article-->
+    <dimen name="open_article_image_height">200dp</dimen>
+    <dimen name="open_article_image_margin_top">16dp</dimen>
+    <dimen name="open_article_title_margin_end_start">16dp</dimen>
+    <dimen name="open_article_title_margin_top">8dp</dimen>
+    <dimen name="open_article_category_margin_top_bottom">8dp</dimen>
+    <dimen name="open_article_category_margin_start">16dp</dimen>
+    <dimen name="open_article_btns_height">52dp</dimen>
+    <dimen name="open_article_image_width">300dp</dimen>
+
+    <dimen name="show_article_image_width">300dp</dimen>
+    <dimen name="show_article_image_height">200dp</dimen>
+
+    <dimen name="no_internet_connection_height">26dp</dimen>
+    <dimen name="new_articles_available_hint_view_radius">20dp</dimen>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6E23AE</color>
+    <color name="colorPrimaryDark">#6D01CD</color>
+    <color name="colorAccent">#C86DD7</color>
+
+    <color name="home_page_background">#151926</color>
+
+    <color name="home_page_top_gradient_start_color">#151926</color>
+    <color name="home_page_top_gradient_end_color">#7B607F</color>
+
+    <color name="no_internet_connection_bg_start_color">#FA6161</color>
+    <color name="no_intenrnet_connection_bg_end_color">#F76B1C</color>
+    <color name="new_articale_available_bg_color">#5A000000</color>
+</resources>
