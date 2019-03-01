@@ -353,6 +353,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void openArticle(OpenArticleEvent openArticleEvent) {
+
         View[] sharedViews = openArticleEvent.getSharedViews();
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         Bundle arguments = openArticleFragment.getArguments();

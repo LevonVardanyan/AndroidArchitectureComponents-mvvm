@@ -52,6 +52,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
             setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
             setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
         }
+        setRetainInstance(false);
     }
 
     public void setOnActionListener(OnActionListener onActionListener) {
@@ -82,7 +83,9 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         }
         binding.setListener(this);
         binding.setArticle(currentArticle);
+        isSaved.set(currentArticle.savedForOffline);
         binding.setSaved(isSaved);
+        binding.executePendingBindings();
         loadImage(currentArticle);
     }
 

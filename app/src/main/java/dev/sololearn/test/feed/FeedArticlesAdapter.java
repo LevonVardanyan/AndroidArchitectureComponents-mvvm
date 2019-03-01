@@ -104,7 +104,7 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (article != null && article.articleFields != null) {
             if (article.savedForOffline && article.articleFields.articleThumbnailPath != null) {
                 File cacheFile = new File(context.getFilesDir(), article.articleFields.articleThumbnailPath);
-                requestManager.load(Uri.fromFile(cacheFile)).diskCacheStrategy(DiskCacheStrategy.NONE)
+                requestManager.load(Uri.fromFile(cacheFile)).diskCacheStrategy(DiskCacheStrategy.NONE).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
                         .skipMemoryCache(true).into(thumbnail);
             } else {
                 requestManager.load(article.articleFields.articleThumbnail)
