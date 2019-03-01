@@ -269,8 +269,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         feedViewModel.getIsNewArticlesAvailable().observe(this, aBoolean -> {
             if (aBoolean) {
                 AnimationUtils.showViewWithAlphaAnimation(binding.newArticlesAvailable);
-            } else {
-                AnimationUtils.hideViewWithAlphaAnimation(binding.newArticlesAvailable);
             }
         });
 
@@ -331,7 +329,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         int id = v.getId();
         switch (id) {
             case R.id.new_articles_available:
-                binding.newArticlesAvailable.animate().alpha(0).start();
+                AnimationUtils.hideViewWithAlphaAnimation(binding.newArticlesAvailable);
+                feedViewModel.getIsNewArticlesAvailable().setValue(false);
                 binding.articlesRecyclerView.scrollToPosition(0);
                 break;
         }

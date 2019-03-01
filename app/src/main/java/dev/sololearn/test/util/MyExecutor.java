@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 
 /**
  * Executor class provides the different executors e.g UI, DB, NETWORK
- * I tried to create this class like in Kotlin coroutines))
  */
 public class MyExecutor {
 	private static MyExecutor myExecutor;
