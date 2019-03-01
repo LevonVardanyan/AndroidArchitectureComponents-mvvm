@@ -46,9 +46,4 @@ public interface BaseLocalDataSource {
      */
     void getArticles(GetDataCallback getDataCallback);
 
-    /**
-     * delete from local source
-     * @param deleteDBCallback result callback
-     */
-    void deleteCachedArticles(DeleteDBCallback deleteDBCallback);
 }

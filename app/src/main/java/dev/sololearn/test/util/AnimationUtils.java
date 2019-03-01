@@ -57,4 +57,12 @@ public class AnimationUtils {
         valueAnimator.setDuration(200);
         valueAnimator.start();
     }
+
+    public static void showViewWithAlphaAnimation(View view) {
+        view.animate().alpha(1f).start();
+    }
+
+    public static void hideViewWithAlphaAnimation(View view) {
+        view.animate().alpha(0f).start();
+    }
 }

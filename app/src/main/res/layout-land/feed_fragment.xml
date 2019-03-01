@@ -37,7 +37,7 @@
 
             <LinearLayout
                 android:id="@+id/pinned_items_container"
-                android:layout_width="@dimen/pinned_items_container_width"
+                android:layout_width="@dimen/pinned_items_landscape_container_width"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
@@ -140,7 +140,7 @@
             style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="@{viewmodel.isDataLoading ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewmodel.isInitialLoaded ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/root"
             app:layout_constraintEnd_toEndOf="@+id/root"
             app:layout_constraintStart_toEndOf="@+id/pinnies"

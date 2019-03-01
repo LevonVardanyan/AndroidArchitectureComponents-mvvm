@@ -53,4 +53,9 @@ public interface BaseRemoteDataSource {
      * @return
      */
     MutableLiveData<String> getNewestArticle();
+
+    /**
+     *
+     */
+    void reset();
 }

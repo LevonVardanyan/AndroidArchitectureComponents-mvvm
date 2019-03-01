@@ -10,12 +10,12 @@ import dev.sololearn.test.datamodel.local.Article;
  * which must be shared to other activity.  I think this is the limitation of android shared elements
  * transition framework
  */
-public class OpenArticleEvent {
+public class ClickArticleEvent {
 
 	private View[] sharedViews;
 	private Article article;
 
-	public OpenArticleEvent(Article article, View[] sharedViews) {
+	public ClickArticleEvent(Article article, View[] sharedViews) {
 		this.sharedViews = sharedViews;
 		this.article = article;
 	}

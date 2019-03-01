@@ -5,8 +5,8 @@ import java.util.List;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import dev.sololearn.test.callback.DeleteDBCallback;
 import dev.sololearn.test.callback.GetDataCallback;
+import dev.sololearn.test.callback.RefreshListCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.remote.RequestConstants;
 import dev.sololearn.test.datamodel.remote.apimodel.ArticleResponse;
@@ -50,15 +50,14 @@ public class ArticlesRepository {
         return localDataSource.getPinnedArticles();
     }
 
-    public void refreshArticles(String newestArticleDate, GetDataCallback getDataCallback) {
+    public void refreshArticles(String newestArticleDate, List<Article> oldList, RefreshListCallback refreshListCallback) {
         MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.NETWORK, () -> {
-            List<Article> newArticles = new ArrayList<>();
             ArticleResponse articleResponse = remoteDataSource.getArticlesFromDateSync(newestArticleDate, 1);
             if (articleResponse != null && articleResponse.articlesData != null &&
                     RequestConstants.RESULT_OK.equalsIgnoreCase(articleResponse.articlesData.status)) {
                 ArticlesData articlesData = articleResponse.articlesData;
                 long remainPageCount = articlesData.pagesCount - 1;
-                newArticles.addAll(articleResponse.articlesData.articleList);
+                List<Article> newArticles = new ArrayList<>(articleResponse.articlesData.articleList);
                 int page = 2;
                 while (page < remainPageCount) {
                     articleResponse = remoteDataSource.getArticlesFromDateSync(newestArticleDate, page);
@@ -68,9 +67,30 @@ public class ArticlesRepository {
                     }
                     page++;
                 }
-                getDataCallback.onSuccess(newArticles);
+                List<Article> resultList = oldList;
+                boolean isSomethingAdded = checkForNewItems(resultList, newArticles);
+                MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () ->
+                        refreshListCallback.onDataRefreshed(resultList, isSomethingAdded));
             }
         });
+    }
+
+    private boolean checkForNewItems(List<Article> oldArticles, List<Article> newArticles) {
+        List<Article> endList = oldArticles;
+        boolean isSomeItemAdded = false;
+        if (oldArticles != null) {
+            for (int i = newArticles.size() - 1; i >= 0; i--) {
+                Article nextNewItem = newArticles.get(i);
+                int index = oldArticles.indexOf(nextNewItem);
+                if (index < 0) {
+                    endList.add(0, nextNewItem);
+                    isSomeItemAdded = true;
+                } else {
+                    endList.get(index).set(nextNewItem);
+                }
+            }
+        }
+        return isSomeItemAdded;
     }
 
     public void saveArticleForOffline(Article article) {
@@ -108,10 +128,8 @@ public class ArticlesRepository {
         localDataSource.insert(article, callback);
     }
 
-    public void reset(DeleteDBCallback deleteDBCallback) {
-        localDataSource.deleteCachedArticles(deleteDBCallback);
-        remoteDataSource.resetPageCounter();
+    public void reset() {
+        remoteDataSource.reset();
     }
-
 
 }

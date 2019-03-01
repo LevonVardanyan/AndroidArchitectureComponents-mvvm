@@ -60,7 +60,7 @@ public class Article implements Parcelable {
     public Article() {
     }
 
-    public void copyRemote(@NonNull Article nextNewItem) {
+    public void set(@NonNull Article nextNewItem) {
         this.id = nextNewItem.id;
         this.title = nextNewItem.title;
         this.webUrl = nextNewItem.webUrl;
@@ -69,7 +69,6 @@ public class Article implements Parcelable {
         if (articleFields != null && nextNewItem.articleFields != null) {
             articleFields.articleThumbnail = nextNewItem.articleFields.articleThumbnail;
         }
-
     }
 
     @Override

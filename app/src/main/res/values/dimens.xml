@@ -38,7 +38,7 @@
 	<dimen name="pinned_item_title_margin_top_bottom">8dp</dimen>
     <dimen name="pinned_items_container_height">220dp</dimen>
     <dimen name="pinned_items_recycler_view_margin_top">8dp</dimen>
-    <dimen name="pinned_items_container_width">0dp</dimen>
+    <dimen name="pinned_items_landscape_container_width">200dp</dimen>
 
 
     <!--open article-->

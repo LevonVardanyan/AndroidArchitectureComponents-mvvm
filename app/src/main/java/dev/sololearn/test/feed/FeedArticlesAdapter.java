@@ -13,104 +13,72 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
-import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import dev.sololearn.test.R;
-import dev.sololearn.test.databinding.FeedItemBinding;
-import dev.sololearn.test.databinding.FeedItemGridBinding;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.util.Constants;
 
 /**
  * this adapter will manage Articles in Feed
  */
-public class FeedArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private FeedViewModel feedViewModel;
-    private LifecycleOwner lifecycleOwner;
+public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapter.ArticleItemViewHolder> {
 
     private RequestManager requestManager;
+    private MutableLiveData<ClickArticleEvent> clickArticle;
+    private Context context;
     private List<Article> items;
-    private FeedFragment.ViewStyle viewStyle = FeedFragment.ViewStyle.LIST;
+    private int feedStyle;
 
-    public FeedArticlesAdapter(FeedViewModel feedViewModel, LifecycleOwner activity,
-                               RequestManager requestManager, List<Article> items) {
-        this.feedViewModel = feedViewModel;
-        this.lifecycleOwner = activity;
+    FeedArticlesAdapter(Context context, MutableLiveData<ClickArticleEvent> clickArticle,
+                        RequestManager requestManager) {
+        this.context = context;
         this.requestManager = requestManager;
-        this.items = items;
+        this.clickArticle = clickArticle;
+        this.items = new ArrayList<>(0);
     }
 
-    public void setViewStyle(FeedFragment.ViewStyle viewStyle) {
-        this.viewStyle = viewStyle;
+    void setFeedStyle(int feedStyle) {
+        this.feedStyle = feedStyle;
     }
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        RecyclerView.ViewHolder holder;
-        if (viewStyle == FeedFragment.ViewStyle.LIST) {
-            FeedItemBinding binding = DataBindingUtil.inflate(LayoutInflater.from(
-                    parent.getContext()), R.layout.feed_item, parent, false);
-            ArticleActionListener articleActionListener = article -> {
-                feedViewModel.onArticleClick(article, new View[]{binding.articleThumbnail});
-            };
-            ArticleViewHolder articleViewHolder = new ArticleViewHolder(binding);
-            articleViewHolder.binding.setLifecycleOwner(lifecycleOwner);
-            articleViewHolder.binding.setListener(articleActionListener);
-            holder = articleViewHolder;
-        } else {
-            FeedItemGridBinding binding = DataBindingUtil.inflate(LayoutInflater.from(
-                    parent.getContext()), R.layout.feed_item_grid, parent, false);
-            ArticleActionListener articleActionListener = article -> {
-                feedViewModel.onArticleClick(article, new View[]{binding.articleThumbnail});
-            };
-            ArticleGridViewHolder articleGridViewHolder = new ArticleGridViewHolder(binding);
-            articleGridViewHolder.binding.setLifecycleOwner(lifecycleOwner);
-            articleGridViewHolder.binding.setListener(articleActionListener);
-            holder = articleGridViewHolder;
-        }
-        return holder;
+    public FeedArticlesAdapter.ArticleItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ArticleItemViewHolder viewHolder;
+        View view = LayoutInflater.from(context).inflate(feedStyle == FeedFragment.FEED_STYLE_LIST ?
+                R.layout.feed_item : R.layout.feed_item_grid, parent, false);
+        viewHolder = new ArticleItemViewHolder(view);
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull FeedArticlesAdapter.ArticleItemViewHolder holder, int position) {
         int pos = holder.getAdapterPosition();
         Article article = items.get(pos);
-        ImageView thumbnail;
-        TextView title;
-        TextView category;
-        Context context;
-        if (viewStyle == FeedFragment.ViewStyle.STAGGERED) {
-            ArticleGridViewHolder articleGridViewHolder = (ArticleGridViewHolder) holder;
-            articleGridViewHolder.binding.setArticle(article);
-            thumbnail = articleGridViewHolder.binding.articleThumbnail;
-            context = articleGridViewHolder.binding.getRoot().getContext();
-
-        } else {
-            ArticleViewHolder articleViewHolder = (ArticleViewHolder) holder;
-            articleViewHolder.binding.setArticle(article);
-            thumbnail = articleViewHolder.binding.articleThumbnail;
-            context = articleViewHolder.binding.getRoot().getContext();
-        }
-        ViewCompat.setTransitionName(thumbnail,
-                Constants.ARTICLE_IMAGE_TRANSACTION_NAME + position);
+        ViewCompat.setTransitionName(holder.thumbnail, Constants.ARTICLE_IMAGE_TRANSACTION_NAME + position);
         if (article != null && article.articleFields != null) {
+            holder.title.setText(article.title);
+            holder.category.setText(article.category);
+            if (holder.publicationDate != null) {
+                holder.publicationDate.setText(article.publicationDate);
+            }
+            holder.itemView.setOnClickListener(v -> clickArticle.setValue(new ClickArticleEvent(article, new View[]{holder.thumbnail})));
             if (article.savedForOffline && article.articleFields.articleThumbnailPath != null) {
                 File cacheFile = new File(context.getFilesDir(), article.articleFields.articleThumbnailPath);
                 requestManager.load(Uri.fromFile(cacheFile)).diskCacheStrategy(DiskCacheStrategy.NONE).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
-                        .skipMemoryCache(true).into(thumbnail);
+                        .skipMemoryCache(true).into(holder.thumbnail);
             } else {
-                requestManager.load(article.articleFields.articleThumbnail)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                requestManager.load(article.articleFields.articleThumbnail).diskCacheStrategy(DiskCacheStrategy.NONE)
                         .skipMemoryCache(true).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
-                        .into(thumbnail);
+                        .into(holder.thumbnail);
             }
         }
     }
@@ -120,7 +88,7 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return items.size();
     }
 
-    public void setItems(List<Article> items) {
+    void setItems(List<Article> items) {
         ArticleItemDiffCallback pinnedItemDiffCallback = new ArticleItemDiffCallback(this.items, items);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(pinnedItemDiffCallback);
 
@@ -129,29 +97,19 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         diffResult.dispatchUpdatesTo(this);
     }
 
-    public void addItemsFromEnd(List<Article> items) {
-        this.items.addAll(items);
-    }
+    class ArticleItemViewHolder extends RecyclerView.ViewHolder {
+        ImageView thumbnail;
+        TextView title;
+        TextView category;
+        @Nullable
+        TextView publicationDate;
 
-    public void addItemsFromStart(List<Article> items) {
-        this.items.addAll(0, items);
-    }
-
-    public class ArticleViewHolder extends RecyclerView.ViewHolder {
-        FeedItemBinding binding;
-
-        public ArticleViewHolder(FeedItemBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-    }
-
-    public class ArticleGridViewHolder extends RecyclerView.ViewHolder {
-        FeedItemGridBinding binding;
-
-        public ArticleGridViewHolder(@NonNull FeedItemGridBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
+        ArticleItemViewHolder(View view) {
+            super(view);
+            thumbnail = view.findViewById(R.id.article_thumbnail);
+            title = view.findViewById(R.id.article_title);
+            category = view.findViewById(R.id.article_category);
+            publicationDate = view.findViewById(R.id.article_publication_date);
         }
     }
 

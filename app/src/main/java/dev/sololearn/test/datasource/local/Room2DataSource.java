@@ -5,7 +5,6 @@ import android.content.Context;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import dev.sololearn.test.callback.DeleteDBCallback;
 import dev.sololearn.test.callback.GetDataCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.local.ArticlesDao;
@@ -16,24 +15,24 @@ import dev.sololearn.test.util.MyExecutor;
  * local source implementation for Room, this class implements BaseLocalDataSource and gives API
  * for working with room
  */
-public class LocalAppDataSource implements BaseLocalDataSource {
+public class Room2DataSource implements BaseLocalDataSource {
 
-    private static LocalAppDataSource articlesLocalSource;
+    private static Room2DataSource articlesLocalSource;
     private ArticlesDao articlesDao;
 
 
-    public static LocalAppDataSource getInstance(Context context) {
+    public static Room2DataSource getInstance(Context context) {
         if (articlesLocalSource == null) {
-            synchronized (LocalAppDataSource.class) {
+            synchronized (Room2DataSource.class) {
                 if (articlesLocalSource == null) {
-                    articlesLocalSource = new LocalAppDataSource(context);
+                    articlesLocalSource = new Room2DataSource(context);
                 }
             }
         }
         return articlesLocalSource;
     }
 
-    private LocalAppDataSource(Context context) {
+    private Room2DataSource(Context context) {
         articlesDao = ArticlesDataBase.getInstance(context).getArticlesDao();
     }
 
@@ -78,14 +77,6 @@ public class LocalAppDataSource implements BaseLocalDataSource {
                 }
             });
 
-        });
-    }
-
-    @Override
-    public void deleteCachedArticles(DeleteDBCallback deleteDBCallback) {
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
-            articlesDao.delete(false, false);
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, deleteDBCallback::onSuccess);
         });
     }
 
