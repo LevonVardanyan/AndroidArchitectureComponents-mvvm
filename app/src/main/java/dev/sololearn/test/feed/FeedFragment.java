@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.transition.Fade;
+import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,11 +22,9 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,9 +33,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import dev.sololearn.test.GlideApp;
 import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.FeedFragmentBinding;
-import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.feed.pinned.PinnedItemsAdapter;
-import dev.sololearn.test.openarticle.OpenArticleFragment;
 import dev.sololearn.test.util.AnimationUtils;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.NetworkStateReceiver;
@@ -54,13 +52,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     private PinnedItemsAdapter pinnedItemsAdapter;
 
     private int feedStyle;
+    private boolean isPinnedPanelOpened;
+    private boolean isPinnedPanelLoadedFirstTime;
     private SharedPreferences sharedPreferences;
     private OffsetDecoration feedItemsOffsetDecoration;
 
     private RequestManager glideRequestManager;
     private NetworkStateReceiver networkStateReceiver;
-
-    private OpenArticleFragment openArticleFragment;
 
     @Nullable
     @Override
@@ -71,9 +69,29 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Activity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
+            setSharedElementEnterTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
+            setSharedElementReturnTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
+            setExitTransition(new Fade());
+            setEnterTransition(new Fade());
+        }
+    }
+
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getActivity() == null) {
+            return;
+        }
         feedViewModel = obtainViewModel(getActivity());
+        isPinnedPanelLoadedFirstTime = true;
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         int marginStartEnd = getResources().getDimensionPixelSize(R.dimen.feed_item_margin_start_end);
@@ -100,7 +118,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         checkNetwork();
-        initOpenArticleFragment();
     }
 
     @Override
@@ -152,75 +169,46 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
-    public boolean onBackPressed() {
-        if (openArticleFragment.isAdded()) {
-            openArticleFragment.onBackPressed();
-            return true;
-        }
-        return false;
-    }
-
-    private void initOpenArticleFragment() {
-        openArticleFragment = (OpenArticleFragment) getActivity().getSupportFragmentManager().findFragmentByTag(OpenArticleFragment.TAG);
-        if (openArticleFragment == null) {
-            openArticleFragment = new OpenArticleFragment();
-        }
-        openArticleFragment.setOnActionListener((currentArticle, action) -> {
-            switch (action) {
-                case PIN_UNPIN:
-                    pinUnpin(currentArticle);
-                    break;
-                case SAVE:
-                    feedViewModel.saveArticleForOffline(currentArticle);
-                    break;
-            }
-        });
-    }
-
     private void initPinnedContainer() {
         feedViewModel.getPinnedItemsCount().observe(this, integer -> {
-            int panelHeight = getResources().getDimensionPixelSize(R.dimen.pinned_items_container_height);
-            int panelWidth = getResources().getDimensionPixelSize(R.dimen.pinned_items_landscape_container_width);
-            ViewGroup.LayoutParams layoutParams = binding.pinnedItemsContainer.getLayoutParams();
-            if (integer == 0) {
-                if (Utils.isLandscape(getActivity())) {
-                    layoutParams.width = 0;
-                } else {
-                    layoutParams.height = 0;
-                }
-            } else {
-                if (Utils.isLandscape(getActivity())) {
-                    layoutParams.width = panelWidth;
-                } else {
-                    layoutParams.height = panelHeight;
-                }
-            }
-            binding.pinnedItemsContainer.setLayoutParams(layoutParams);
-        });
-    }
-
-    private void pinUnpin(Article article) {
-        feedViewModel.pinUnPinArticle(article, () -> feedViewModel.getPinnedItemsCount().observe(FeedFragment.this, integer -> {
-            feedViewModel.getPinnedItemsCount().removeObservers(FeedFragment.this);
-            if (getActivity() == null) {
+            feedViewModel.getPinnedItemsCount().removeObservers(this);
+            Activity activity = getActivity();
+            if (activity == null) {
                 return;
             }
             int panelHeight = getResources().getDimensionPixelSize(R.dimen.pinned_items_container_height);
             int panelWidth = getResources().getDimensionPixelSize(R.dimen.pinned_items_landscape_container_width);
-            if (article.pinned && integer == 1) {
-                if (Utils.isLandscape(getActivity())) {
-                    AnimationUtils.showAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
+            if (isPinnedPanelLoadedFirstTime) {
+                isPinnedPanelLoadedFirstTime = false;
+                ViewGroup.LayoutParams layoutParams = binding.pinnedItemsContainer.getLayoutParams();
+                int width = integer == 0 ? 0 : panelWidth;
+                int height = integer == 0 ? 0 : panelHeight;
+                if (Utils.isLandscape(activity)) {
+                    isPinnedPanelOpened = width > 0;
+                    layoutParams.width = width;
                 } else {
-                    AnimationUtils.showAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                    isPinnedPanelOpened = height > 0;
+                    layoutParams.height = height;
                 }
-            } else if (!article.pinned && integer == 0) {
-                if (Utils.isLandscape(getActivity())) {
-                    AnimationUtils.hideAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
-                } else {
-                    AnimationUtils.hideAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                binding.pinnedItemsContainer.setLayoutParams(layoutParams);
+            } else {
+                if (integer == 1 && !isPinnedPanelOpened) {
+                    isPinnedPanelOpened = true;
+                    if (Utils.isLandscape(getActivity())) {
+                        AnimationUtils.showAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
+                    } else {
+                        AnimationUtils.showAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                    }
+                } else if (integer == 0 && isPinnedPanelOpened) {
+                    isPinnedPanelOpened = false;
+                    if (Utils.isLandscape(getActivity())) {
+                        AnimationUtils.hideAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
+                    } else {
+                        AnimationUtils.hideAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                    }
                 }
             }
-        }));
+        });
     }
 
     private void setupFeedAdapter() {
@@ -262,7 +250,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setupObserversAndStart() {
-        feedViewModel.getOpenArticleEvent().observe(this, this::openArticle);
         feedViewModel.getNewestArticle().observe(this, newestArticleDate ->
                 sharedPreferences.edit().putString(Constants.PREF_NEWEST_ARTICLE_PUBLICATION_DATE,
                         newestArticleDate).apply());
@@ -298,30 +285,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             }
         });
         getActivity().registerReceiver(networkStateReceiver, new IntentFilter(Constants.CONNECTIVITY_CHANGE_ACTION));
-    }
-
-    private void openArticle(ClickArticleEvent clickArticleEvent) {
-        View[] sharedViews = clickArticleEvent.getSharedViews();
-        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-        Bundle arguments = openArticleFragment.getArguments();
-        if (arguments == null) {
-            arguments = new Bundle();
-        }
-        arguments.putParcelable(Constants.EXTRA_ARTICLE, clickArticleEvent.getArticle());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && sharedViews != null) {
-            arguments.putString(Constants.EXTRA_TRANSITION_NAME_THUMB, ViewCompat.getTransitionName(sharedViews[0]));
-
-            for (View view : sharedViews) {
-                fragmentTransaction.addSharedElement(view, ViewCompat.getTransitionName(view));
-            }
-            fragmentTransaction.replace(R.id.open_article_container, openArticleFragment,
-                    OpenArticleFragment.TAG);
-        }
-        if (openArticleFragment.getArguments() == null) {
-            openArticleFragment.setArguments(arguments);
-        }
-        fragmentTransaction.replace(R.id.open_article_container, openArticleFragment,
-                OpenArticleFragment.TAG).commit();
     }
 
     @Override

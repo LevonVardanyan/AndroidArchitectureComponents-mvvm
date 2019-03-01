@@ -37,6 +37,7 @@ public class FeedViewModel extends AndroidViewModel {
     private MutableLiveData<ClickArticleEvent> openArticleEvent = new MutableLiveData<>();
     private MutableLiveData<Boolean> isNewArticlesAvailable = new MutableLiveData<>();
     private ObservableBoolean isInitialLoaded = new ObservableBoolean();
+    private MutableLiveData<Boolean> closeEvent = new MutableLiveData<>();
     ObservableBoolean isEmpty = new ObservableBoolean();
     private ArticlesRepository articlesRepository;
     private boolean isLoading;
@@ -142,19 +143,20 @@ public class FeedViewModel extends AndroidViewModel {
         });
     }
 
-    void pinUnPinArticle(Article article, Runnable callback) {
+    public void pinUnPinArticle(Article article) {
         if (article != null) {
             if (article.pinned) {
-                articlesRepository.unpinArticle(article, callback);
+                articlesRepository.unpinArticle(article);
             } else {
-                articlesRepository.pinArticle(article, callback);
+                articlesRepository.pinArticle(article);
                 articlesRepository.saveArticleForOffline(article);
             }
             updateItem(article);
+            closeEvent.setValue(true);
         }
     }
 
-    void saveArticleForOffline(Article article) {
+    public void saveArticleForOffline(Article article) {
         if (article != null && !article.savedForOffline) {
             articlesRepository.saveArticleForOffline(article);
             updateItem(article);
@@ -189,6 +191,10 @@ public class FeedViewModel extends AndroidViewModel {
 
     public void onArticleClick(@NonNull Article article, @Nullable View[] sharedViews) {
         openArticleEvent.setValue(new ClickArticleEvent(article, sharedViews));
+    }
+
+    public MutableLiveData<Boolean> getCloseEvent() {
+        return closeEvent;
     }
 
     @NonNull

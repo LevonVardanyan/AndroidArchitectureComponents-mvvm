@@ -11,6 +11,7 @@ import dev.sololearn.test.datamodel.local.Article;
  * transition framework
  */
 public class ClickArticleEvent {
+	private boolean isHandled;
 
 	private View[] sharedViews;
 	private Article article;
@@ -18,6 +19,7 @@ public class ClickArticleEvent {
 	public ClickArticleEvent(Article article, View[] sharedViews) {
 		this.sharedViews = sharedViews;
 		this.article = article;
+		isHandled = false;
 	}
 
 	public View[] getSharedViews() {
@@ -28,4 +30,11 @@ public class ClickArticleEvent {
 		return article;
 	}
 
+	public void setAsHandled() {
+		isHandled = true;
+	}
+
+	public boolean isHandled() {
+		return isHandled;
+	}
 }

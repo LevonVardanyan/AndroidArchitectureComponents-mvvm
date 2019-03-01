@@ -18,9 +18,6 @@ public class Constants {
 
     //transaction names
     public static final String ARTICLE_IMAGE_TRANSACTION_NAME = "articleImage_";
-    public static final String ARTICLE_TITLE_TRANSACTION_NAME = "articleTitle_";
-    public static final String ARTICLE_CATEGORY_TRANSACTION_NAME = "articleCategory_";
-    public static final String ARTICLE_CARD_TRANSACTION_NAME = "articleCard_";
 
     public static final String PINNED_ARTICLE_IMAGE_TRANSACTION_NAME = "pinnedArticleImage_";
     public static final String PINNED_ARTICLE_TITLE_TRANSACTION_NAME = "pinnedArticleTitle_";

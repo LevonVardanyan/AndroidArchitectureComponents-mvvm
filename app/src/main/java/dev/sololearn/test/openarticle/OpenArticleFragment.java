@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.transition.Fade;
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,35 +29,40 @@ import androidx.core.view.ViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProviders;
 import dev.sololearn.test.GlideApp;
 import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.OpenArticleActivityBinding;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.local.ArticleFields;
+import dev.sololearn.test.feed.FeedViewModel;
 import dev.sololearn.test.util.CacheFileManager;
 import dev.sololearn.test.util.Constants;
+import dev.sololearn.test.util.ViewModelFactory;
 
 public class OpenArticleFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "openArticleFragment";
 
     private OpenArticleActivityBinding binding;
 
-    ObservableBoolean isSaved = new ObservableBoolean();
-    Article currentArticle;
-    OnActionListener onActionListener;
+    private ObservableBoolean isSaved = new ObservableBoolean();
+    private Article currentArticle;
+    private FeedViewModel feedViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
-            setSharedElementReturnTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
+            Activity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
+            setSharedElementEnterTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
+            setSharedElementReturnTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
+            setEnterTransition(new Fade());
+            setExitTransition(new Fade());
         }
-        setRetainInstance(false);
-    }
-
-    public void setOnActionListener(OnActionListener onActionListener) {
-        this.onActionListener = onActionListener;
     }
 
     @Nullable
@@ -69,6 +75,10 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getActivity() == null) {
+            return;
+        }
+        feedViewModel = obtainViewModel(getActivity());
         init();
     }
 
@@ -76,9 +86,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         Bundle arguments = getArguments();
         if (arguments != null) {
             currentArticle = arguments.getParcelable(Constants.EXTRA_ARTICLE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                ViewCompat.setTransitionName(binding.articleThumbnail, arguments.getString(Constants.EXTRA_TRANSITION_NAME_THUMB));
-            }
+            binding.articleThumbnail.setTransitionName(arguments.getString(Constants.EXTRA_TRANSITION_NAME_THUMB));
 
         }
         binding.setListener(this);
@@ -89,6 +97,11 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         loadImage(currentArticle);
     }
 
+    private static FeedViewModel obtainViewModel(FragmentActivity activity) {
+        ViewModelFactory factory = ViewModelFactory.getInstance(activity.getApplication());
+        return ViewModelProviders.of(activity, factory).get(FeedViewModel.class);
+    }
+
     private void loadImage(Article article) {
         String url;
         if (article.savedForOffline && article.articleFields.articleThumbnailPath != null) {
@@ -97,6 +110,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         } else {
             url = article.articleFields.articleThumbnail;
         }
+        postponeEnterTransition();
         GlideApp.with(OpenArticleFragment.this)
                 .asBitmap().diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).load(url).apply(
                 RequestOptions.placeholderOf(R.drawable.image_place_holder))
@@ -104,28 +118,17 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
             @Override
             public boolean onLoadFailed(@Nullable GlideException e,
                                         Object model, Target<Bitmap> target, boolean isFirstResource) {
+                startPostponedEnterTransition();
                 return false;
             }
 
             @Override
             public boolean onResourceReady(Bitmap resource, Object model,
                                            Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                startPostponedEnterTransition();
                 return false;
             }
         }).into(binding.articleThumbnail);
-    }
-
-    public boolean onBackPressed() {
-        if (currentArticle != null && !currentArticle.savedForOffline && !currentArticle.pinned &&
-                currentArticle.articleFields != null && currentArticle.articleFields.articleThumbnailPath != null) {
-            CacheFileManager.deleteThumbnailCache(getActivity(), currentArticle.articleFields.articleThumbnailPath);
-        }
-        close();
-        return true;
-    }
-
-    private void close() {
-        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
     }
 
     private void saveArticleThumbnail(Runnable runnable) {
@@ -147,44 +150,35 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
     public void onClick(View v) {
         int id = v.getId();
         Activity activity = getActivity();
-        if (getActivity() == null) {
+        if (activity == null) {
             return;
         }
         switch (id) {
             case R.id.open_full_article:
-                if (getActivity() == null) {
+                if (activity == null) {
                     return;
                 }
                 Intent showArticleIntent = new Intent();
                 showArticleIntent.setAction(Intent.ACTION_VIEW);
                 showArticleIntent.setData(Uri.parse(currentArticle.webUrl));
-                PackageManager packageManager = getActivity().getPackageManager();
+                PackageManager packageManager = activity.getPackageManager();
                 if (showArticleIntent.resolveActivity(packageManager) != null) {
                     startActivity(showArticleIntent);
                 } else {
-                    Toast.makeText(getActivity(), R.string.no_app_for_handle, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, R.string.no_app_for_handle, Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.save_for_offline:
                 saveArticleThumbnail(() -> {
                     isSaved.set(true);
-                    onActionListener.onAction(currentArticle, Action.SAVE);
+                    feedViewModel.saveArticleForOffline(currentArticle);
                 });
                 break;
             case R.id.pin_unpin_article:
                 saveArticleThumbnail(() -> {
-                    onActionListener.onAction(currentArticle, Action.PIN_UNPIN);
-                    close();
+                    feedViewModel.pinUnPinArticle(currentArticle);
                 });
                 break;
         }
-    }
-
-    public interface OnActionListener {
-        void onAction(Article currentArticle, Action action);
-    }
-
-    public enum Action {
-        PIN_UNPIN, SAVE, NONE
     }
 }

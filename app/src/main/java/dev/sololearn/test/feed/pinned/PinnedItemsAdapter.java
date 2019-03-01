@@ -66,8 +66,7 @@ public class PinnedItemsAdapter extends RecyclerView.Adapter<PinnedItemsAdapter.
         int pos = holder.getAdapterPosition();
         Article article = items.get(pos);
         holder.binding.setArticle(article);
-        ViewCompat.setTransitionName(holder.binding.pinnedArticleThumbnail,
-                Constants.PINNED_ARTICLE_IMAGE_TRANSACTION_NAME + position);
+        holder.binding.pinnedArticleThumbnail.setTransitionName(Constants.PINNED_ARTICLE_IMAGE_TRANSACTION_NAME + position);
         holder.binding.executePendingBindings();
         if (article != null && article.articleFields != null && article.articleFields.articleThumbnailPath != null) {
             File file = new File(holder.binding.getRoot().getContext().getFilesDir(),

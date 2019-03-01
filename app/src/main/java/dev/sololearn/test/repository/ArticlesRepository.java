@@ -110,9 +110,9 @@ public class ArticlesRepository {
         return remoteDataSource.getNewestArticle();
     }
 
-    public void pinArticle(Article article, Runnable callback) {
+    public void pinArticle(Article article) {
         article.pinned = true;
-        localDataSource.insert(article, callback);
+        localDataSource.insert(article);
     }
 
     public LiveData<Integer> getPinnedItemsCount() {
@@ -123,9 +123,9 @@ public class ArticlesRepository {
         return remoteDataSource.isNewerArticleExist(lastArticleDate);
     }
 
-    public void unpinArticle(Article article, Runnable callback) {
+    public void unpinArticle(Article article) {
         article.pinned = false;
-        localDataSource.insert(article, callback);
+        localDataSource.insert(article);
     }
 
     public void reset() {

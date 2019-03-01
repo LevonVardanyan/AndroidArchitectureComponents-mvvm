@@ -38,6 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/pinned_item_image_height"
                 android:scaleType="fitCenter"
+                android:transitionName="article_thumbnail_trans_name"
                 app:layout_constraintLeft_toLeftOf="@+id/root"
                 app:layout_constraintTop_toTopOf="@+id/root" />
 

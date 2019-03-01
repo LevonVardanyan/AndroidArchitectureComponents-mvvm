@@ -1,5 +1,7 @@
 package dev.sololearn.test.util;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +17,7 @@ public class AnimationUtils {
             view.setLayoutParams(params);
 
         });
-        valueAnimator.setDuration(200);
+        valueAnimator.setDuration(500);
         valueAnimator.start();
     }
 
@@ -28,7 +30,7 @@ public class AnimationUtils {
             view.setLayoutParams(params);
 
         });
-        valueAnimator.setDuration(200);
+        valueAnimator.setDuration(500);
         valueAnimator.start();
     }
 
@@ -41,7 +43,7 @@ public class AnimationUtils {
             view.setLayoutParams(params);
 
         });
-        valueAnimator.setDuration(200);
+        valueAnimator.setDuration(500);
         valueAnimator.start();
     }
 
@@ -54,15 +56,27 @@ public class AnimationUtils {
             view.setLayoutParams(params);
 
         });
-        valueAnimator.setDuration(200);
+        valueAnimator.setDuration(500);
         valueAnimator.start();
     }
 
     public static void showViewWithAlphaAnimation(View view) {
-        view.animate().alpha(1f).start();
+        view.animate().alpha(1f).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                view.setVisibility(View.VISIBLE);
+            }
+        }).start();
     }
 
     public static void hideViewWithAlphaAnimation(View view) {
-        view.animate().alpha(0f).start();
+        view.animate().alpha(0f).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                view.setVisibility(View.GONE);
+            }
+        }).start();
     }
 }
