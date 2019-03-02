@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.RequestManager;
-import com.paginate.Paginate;
 
 import java.util.ArrayList;
 
@@ -38,6 +37,7 @@ import dev.sololearn.test.util.AnimationUtils;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.NetworkStateReceiver;
 import dev.sololearn.test.util.OffsetDecoration;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.util.Utils;
 import dev.sololearn.test.util.ViewModelFactory;
 
@@ -53,20 +53,12 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
 
     private int feedStyle;
     private boolean isPinnedPanelOpened;
-    private boolean isPinnedPanelLoadedFirstTime;
+    private boolean isInitialOpen = true;
     private SharedPreferences sharedPreferences;
     private OffsetDecoration feedItemsOffsetDecoration;
 
     private RequestManager glideRequestManager;
     private NetworkStateReceiver networkStateReceiver;
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DataBindingUtil.inflate(inflater, R.layout.feed_fragment, container, false);
-        binding.setListener(this);
-        return binding.getRoot();
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,6 +75,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = DataBindingUtil.inflate(inflater, R.layout.feed_fragment, container, false);
+        binding.setListener(this);
+        return binding.getRoot();
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -91,7 +90,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             return;
         }
         feedViewModel = obtainViewModel(getActivity());
-        isPinnedPanelLoadedFirstTime = true;
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         int marginStartEnd = getResources().getDimensionPixelSize(R.dimen.feed_item_margin_start_end);
@@ -104,13 +102,20 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         binding.setViewmodel(feedViewModel);
         glideRequestManager = GlideApp.with(this);
 
-        binding.executePendingBindings();
-
+        boolean isInitialOpenValue = isInitialOpen;
         initPinnedContainer();
-        setupFeedAdapter();
-        setupPinnedItems();
-        setupObserversAndStart();
+        setupFeedItemsAdapter();
+        setupPinnedItemsAdapter();
 
+        if (isInitialOpenValue) {
+            setupObserversAndStart();
+            if (Utils.checkInternetConnection(getActivity())) {
+                feedViewModel.startOnline();
+            } else {
+                feedViewModel.startOffline();
+            }
+            observePinChanges();
+        }
         setHasOptionsMenu(true);
     }
 
@@ -170,48 +175,55 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initPinnedContainer() {
-        feedViewModel.getPinnedItemsCount().observe(this, integer -> {
-            feedViewModel.getPinnedItemsCount().removeObservers(this);
-            Activity activity = getActivity();
-            if (activity == null) {
+        feedViewModel.getPinnedItemsCount(count -> {
+            if (getActivity() == null) {
                 return;
             }
             int panelHeight = getResources().getDimensionPixelSize(R.dimen.pinned_items_container_height);
             int panelWidth = getResources().getDimensionPixelSize(R.dimen.pinned_items_landscape_container_width);
-            if (isPinnedPanelLoadedFirstTime) {
-                isPinnedPanelLoadedFirstTime = false;
-                ViewGroup.LayoutParams layoutParams = binding.pinnedItemsContainer.getLayoutParams();
-                int width = integer == 0 ? 0 : panelWidth;
-                int height = integer == 0 ? 0 : panelHeight;
-                if (Utils.isLandscape(activity)) {
-                    isPinnedPanelOpened = width > 0;
-                    layoutParams.width = width;
-                } else {
-                    isPinnedPanelOpened = height > 0;
-                    layoutParams.height = height;
-                }
-                binding.pinnedItemsContainer.setLayoutParams(layoutParams);
+            ViewGroup.LayoutParams layoutParams = binding.pinnedItemsContainer.getLayoutParams();
+            int width = count == 0 ? 0 : panelWidth;
+            int height = count == 0 ? 0 : panelHeight;
+            if (Utils.isLandscape(getActivity())) {
+                layoutParams.width = width;
             } else {
-                if (integer == 1 && !isPinnedPanelOpened) {
-                    isPinnedPanelOpened = true;
-                    if (Utils.isLandscape(getActivity())) {
-                        AnimationUtils.showAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
-                    } else {
-                        AnimationUtils.showAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
-                    }
-                } else if (integer == 0 && isPinnedPanelOpened) {
-                    isPinnedPanelOpened = false;
-                    if (Utils.isLandscape(getActivity())) {
-                        AnimationUtils.hideAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
-                    } else {
-                        AnimationUtils.hideAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
-                    }
-                }
+                layoutParams.height = height;
             }
+            if (isInitialOpen) {
+                isInitialOpen = false;
+                isPinnedPanelOpened = count > 0;
+            }
+            binding.pinnedItemsContainer.setLayoutParams(layoutParams);
         });
     }
 
-    private void setupFeedAdapter() {
+    private void observePinChanges() {
+        feedViewModel.getCloseEvent().observe(this, aBoolean -> feedViewModel.getPinnedItemsCount(count -> {
+            int panelHeight = getResources().getDimensionPixelSize(R.dimen.pinned_items_container_height);
+            int panelWidth = getResources().getDimensionPixelSize(R.dimen.pinned_items_landscape_container_width);
+            if (count == 1 && !isPinnedPanelOpened) {
+                Activity activity = getActivity();
+                if (activity == null) {
+                    return;
+                }
+                isPinnedPanelOpened = true;
+                if (Utils.isLandscape(getActivity())) {
+                    AnimationUtils.showAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
+                } else {
+                    AnimationUtils.showAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                }
+            } else if (count == 0 && isPinnedPanelOpened) {
+                isPinnedPanelOpened = false;
+                if (Utils.isLandscape(getActivity())) {
+                    AnimationUtils.hideAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
+                } else {
+                    AnimationUtils.hideAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
+                }
+            }
+        }));
+    }
+
+    private void setupFeedItemsAdapter() {
         adapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
         adapter.setFeedStyle(feedStyle);
         if (feedStyle == FEED_STYLE_LIST) {
@@ -230,12 +242,16 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             }
         }
         binding.articlesRecyclerView.setAdapter(adapter);
-        Paginate.with(binding.articlesRecyclerView, feedViewModel.getLoadMoreCallback())
-                .addLoadingListItem(false).build();
-        feedViewModel.getItems().observe(this, articles -> adapter.setItems(articles));
+        PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
+                .setLoadingThreshold(5).setLoadForFirstTime(isInitialOpen).build();
+        feedViewModel.getItems().observe(this, articles -> {
+            if (articles != null) {
+                adapter.setItems(articles);
+            }
+        });
     }
 
-    private void setupPinnedItems() {
+    private void setupPinnedItemsAdapter() {
         pinnedItemsAdapter = new PinnedItemsAdapter(feedViewModel, new ArrayList<>(0), glideRequestManager);
         int orientation = Utils.isLandscape(getActivity()) ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL;
         binding.pinnedItemsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
@@ -258,12 +274,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
                 AnimationUtils.showViewWithAlphaAnimation(binding.newArticlesAvailable);
             }
         });
-
-        if (Utils.checkInternetConnection(getActivity())) {
-            feedViewModel.startOnline();
-        } else {
-            feedViewModel.startOffline();
-        }
     }
 
     private void checkNetwork() {
@@ -272,7 +282,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onNetworkAvailable(NetworkStateReceiver receiver) {
                 if (feedViewModel.isEmpty.get()) {
-                    setupFeedAdapter();
+                    feedViewModel.startOnline();
+                    setupFeedItemsAdapter();
                 }
                 AnimationUtils.hideViewWithAlphaAnimation(binding.noInternetConnection);
             }
@@ -294,7 +305,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             case R.id.new_articles_available:
                 AnimationUtils.hideViewWithAlphaAnimation(binding.newArticlesAvailable);
                 feedViewModel.getIsNewArticlesAvailable().setValue(false);
-                binding.articlesRecyclerView.scrollToPosition(0);
+                binding.articlesRecyclerView.smoothScrollToPosition(0);
                 break;
         }
     }

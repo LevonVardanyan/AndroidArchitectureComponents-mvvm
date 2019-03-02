@@ -45,7 +45,7 @@ public interface ArticlesDao {
     List<Article> getAllArticles();
 
     @Query(value = "SELECT Count(*) FROM articles_table WHERE pinned = :pinned")
-    LiveData<Integer> getPinnedItemsCount(boolean pinned);
+    int getPinnedItemsCountSync(boolean pinned);
 
     /**
      * delete single article from db

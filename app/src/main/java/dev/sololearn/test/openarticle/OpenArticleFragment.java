@@ -175,9 +175,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
                 });
                 break;
             case R.id.pin_unpin_article:
-                saveArticleThumbnail(() -> {
-                    feedViewModel.pinUnPinArticle(currentArticle);
-                });
+                saveArticleThumbnail(() -> feedViewModel.pinUnPinArticle(currentArticle));
                 break;
         }
     }

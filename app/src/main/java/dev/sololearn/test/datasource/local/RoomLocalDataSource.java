@@ -6,6 +6,7 @@ import java.util.List;
 
 import androidx.lifecycle.LiveData;
 import dev.sololearn.test.callback.GetDataCallback;
+import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.local.ArticlesDao;
 import dev.sololearn.test.datamodel.local.ArticlesDataBase;
@@ -15,24 +16,24 @@ import dev.sololearn.test.util.MyExecutor;
  * local source implementation for Room, this class implements BaseLocalDataSource and gives API
  * for working with room
  */
-public class Room2DataSource implements BaseLocalDataSource {
+public class RoomLocalDataSource implements BaseLocalDataSource {
 
-    private static Room2DataSource articlesLocalSource;
+    private static RoomLocalDataSource articlesLocalSource;
     private ArticlesDao articlesDao;
 
 
-    public static Room2DataSource getInstance(Context context) {
+    public static RoomLocalDataSource getInstance(Context context) {
         if (articlesLocalSource == null) {
-            synchronized (Room2DataSource.class) {
+            synchronized (RoomLocalDataSource.class) {
                 if (articlesLocalSource == null) {
-                    articlesLocalSource = new Room2DataSource(context);
+                    articlesLocalSource = new RoomLocalDataSource(context);
                 }
             }
         }
         return articlesLocalSource;
     }
 
-    private Room2DataSource(Context context) {
+    private RoomLocalDataSource(Context context) {
         articlesDao = ArticlesDataBase.getInstance(context).getArticlesDao();
     }
 
@@ -62,10 +63,12 @@ public class Room2DataSource implements BaseLocalDataSource {
     }
 
     @Override
-    public LiveData<Integer> getPinnedItemsCount() {
-        return articlesDao.getPinnedItemsCount(true);
+    public void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback) {
+        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
+            int count = articlesDao.getPinnedItemsCountSync(true);
+            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () -> getItemsCountCallback.onResult(count));
+        });
     }
-
 
     @Override
     public void getArticles(GetDataCallback getDataCallback) {

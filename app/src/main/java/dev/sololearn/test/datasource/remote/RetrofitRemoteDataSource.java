@@ -18,8 +18,8 @@ import retrofit2.Response;
  * remote source implementation for Retrofit, this class implements BaseRemoteDataSource and gives API
  * for working with Retrofit
  */
-public class RetrofitDataSource implements BaseRemoteDataSource {
-    private static RetrofitDataSource remoteDataSource;
+public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
+    private static RetrofitRemoteDataSource remoteDataSource;
 
     private static final int PAGE_SIZE = 20;
     private static final int PAGE_SIZE_FROM_DATE = 50;
@@ -31,18 +31,18 @@ public class RetrofitDataSource implements BaseRemoteDataSource {
     private int loadedPageCount;
 
     @NonNull
-    public static RetrofitDataSource getInstance() {
+    public static RetrofitRemoteDataSource getInstance() {
         if (remoteDataSource == null) {
-            synchronized (RetrofitDataSource.class) {
+            synchronized (RetrofitRemoteDataSource.class) {
                 if (remoteDataSource == null) {
-                    remoteDataSource = new RetrofitDataSource();
+                    remoteDataSource = new RetrofitRemoteDataSource();
                 }
             }
         }
         return remoteDataSource;
     }
 
-    private RetrofitDataSource() {
+    private RetrofitRemoteDataSource() {
         apiService = RetrofitRequestBuilder.getInstance().getApiService();
         loadedPageCount = 0;
     }

@@ -3,8 +3,8 @@ package dev.sololearn.test.repository;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import dev.sololearn.test.datasource.local.Room2DataSource;
-import dev.sololearn.test.datasource.remote.RetrofitDataSource;
+import dev.sololearn.test.datasource.local.RoomLocalDataSource;
+import dev.sololearn.test.datasource.remote.RetrofitRemoteDataSource;
 
 
 /**
@@ -12,7 +12,7 @@ import dev.sololearn.test.datasource.remote.RetrofitDataSource;
  */
 public class RepositoryProvider {
 	public static ArticlesRepository provideArticlesRepository(@NonNull Context context) {
-		return ArticlesRepository.getInstance(Room2DataSource.getInstance(context),
-				RetrofitDataSource.getInstance());
+		return ArticlesRepository.getInstance(RoomLocalDataSource.getInstance(context),
+				RetrofitRemoteDataSource.getInstance());
 	}
 }

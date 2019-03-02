@@ -3,8 +3,8 @@ package dev.sololearn.test.datasource.local;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import dev.sololearn.test.callback.DeleteDBCallback;
 import dev.sololearn.test.callback.GetDataCallback;
+import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 
 /**
@@ -38,7 +38,7 @@ public interface BaseLocalDataSource {
     /**
      *
      */
-    LiveData<Integer> getPinnedItemsCount();
+    void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback);
 
     /**
      * get all articles

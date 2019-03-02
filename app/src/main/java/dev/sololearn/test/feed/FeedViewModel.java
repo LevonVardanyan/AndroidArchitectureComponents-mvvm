@@ -4,8 +4,6 @@ import android.app.Application;
 import android.preference.PreferenceManager;
 import android.view.View;
 
-import com.paginate.Paginate;
-
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -15,11 +13,12 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import dev.sololearn.test.callback.GetDataCallback;
-import dev.sololearn.test.callback.RefreshListCallback;
+import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.repository.ArticlesRepository;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.MyExecutor;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 
 /**
  * FeedViewModel manages all use cases in FeedsActivity
@@ -58,7 +57,7 @@ public class FeedViewModel extends AndroidViewModel {
         }
     };
 
-    private Paginate.Callbacks loadMoreCallback = new Paginate.Callbacks() {
+    private PagedScroll.Callback loadMorePagedCallback = new PagedScroll.Callback() {
         @Override
         public void onLoadMore() {
             isLoading = true;
@@ -68,11 +67,6 @@ public class FeedViewModel extends AndroidViewModel {
         @Override
         public boolean isLoading() {
             return isLoading;
-        }
-
-        @Override
-        public boolean hasLoadedAllItems() {
-            return false;
         }
     };
 
@@ -177,8 +171,8 @@ public class FeedViewModel extends AndroidViewModel {
         return articlesRepository.getPinnedItems();
     }
 
-    LiveData<Integer> getPinnedItemsCount() {
-        return articlesRepository.getPinnedItemsCount();
+    void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback) {
+        articlesRepository.getPinnedItemsCount(getItemsCountCallback);
     }
 
     public MutableLiveData<Boolean> getIsNewArticlesAvailable() {
@@ -210,7 +204,7 @@ public class FeedViewModel extends AndroidViewModel {
         return openArticleEvent;
     }
 
-    public Paginate.Callbacks getLoadMoreCallback() {
-        return loadMoreCallback;
+    public PagedScroll.Callback getLoadMorePagedCallback() {
+        return loadMorePagedCallback;
     }
 }

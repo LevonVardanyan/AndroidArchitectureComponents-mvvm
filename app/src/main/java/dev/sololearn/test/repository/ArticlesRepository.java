@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import dev.sololearn.test.callback.GetDataCallback;
 import dev.sololearn.test.callback.RefreshListCallback;
+import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.remote.RequestConstants;
 import dev.sololearn.test.datamodel.remote.apimodel.ArticleResponse;
@@ -115,8 +116,8 @@ public class ArticlesRepository {
         localDataSource.insert(article);
     }
 
-    public LiveData<Integer> getPinnedItemsCount() {
-        return localDataSource.getPinnedItemsCount();
+    public void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback) {
+        localDataSource.getPinnedItemsCount(getItemsCountCallback);
     }
 
     public boolean isNewerArticleExist(String lastArticleDate) {
