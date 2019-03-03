@@ -136,7 +136,7 @@ public class FeedViewModel extends AndroidViewModel {
         articlesRepository.getPinnedItemsCount(getItemsCountCallback);
     }
 
-    public MutableLiveData<Boolean> getIsNewArticlesAvailable() {
+    MutableLiveData<Boolean> getIsNewArticlesAvailable() {
         return isNewArticlesAvailable;
     }
 
@@ -165,7 +165,7 @@ public class FeedViewModel extends AndroidViewModel {
         return loadMorePagedCallback;
     }
 
-    public void reset(Runnable endActionCallback) {
+    void reset(Runnable endActionCallback) {
         articlesRepository.reset(endActionCallback);
     }
 }
