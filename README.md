@@ -31,6 +31,12 @@ and
 BaseRemoteDataSource
 ```
 They provides Api for working with data. Every local dataSource implements first one, and remote dataSource implements the second one.
+
 Then I have one implementation for LocalDataSource: RoomLocalDataSource and one for remote: RetrofitRemoteDataSource.
 This implementations are singlton because must be one instnace of these for all app.
-Its better for testability to have one thing with which ViewModel can interact and ask for data or request for submiting data. It's better to make ViewModel independent from choosing data or working on it, he can only ask for data or request for insert it, thats why I have Repository class which will control data transfer. But Repository doesn't know how that data will be got or inserted, he only manages the transfer from dataSource to viewModel. Here Repository have two types of dataSources one local and one remote, but it doesn't contain Implementation classes for those sources, it only have interface references. Then repository will work with Api provided by dataSources (e.g. BaseLocal or BaseRemote).
+
+Its better for testability to have one thing with which ViewModel can interact and ask for data or request for inserting data. For making ViewModel independent from choosing data or working on it, (he can only ask for data or request for insert it), I have Repository class which will control data transfer.
+But Repository doesn't know how that data will be got or inserted, he only manages the transfer from dataSource to viewModel. Here Repository has two types of dataSources: one local and one remote, but it doesn't contain Implementation classes for those sources, it only have interface references. Then repository will work with Api provided by dataSources (e.g. BaseLocal or BaseRemote).
+
+RoomLocalDataSource implementation contains the work logic with [Android Room](https://developer.android.com/training/data-storage/room/index.html) framework.
+RetrofitRemoteDataSource contains work logic with Retrofit library
