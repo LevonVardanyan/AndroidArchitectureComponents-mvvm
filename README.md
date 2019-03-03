@@ -1,6 +1,6 @@
 # Project Features
 
-·  The data should be pulled from http://open-platform.theguardian.com/documentation/search, using JSON format. The articles should include a title, an image and category.
+·  The data should be pulled from [TheGuardianOpenPlatform](http://open-platform.theguardian.com/documentation/search), using JSON format. The articles should include a title, an image and category.
 
 ·  The home page should be an infinite scrolling list of the articles (ability to switch from list view to Pinterest-like view). Scrolling down the list should pull the next items from the feed.
 
@@ -52,7 +52,8 @@ My viewModel is
 ```Java
 FeedViewModel
 ```
-It manages the connection between View and Data, and saves the app state. It contains LiveData objects for observing by View or Observable objects for using with DataBinding. Also it contains Repository instance for asking data, instance would passed to ViewModel by constructor, when it would created by ViewModelFactory.
+It manages the connection between View and Data, and saves the app state. It contains LiveData objects for observing by View or Observable objects for using with DataBinding. Also it contains Repository instance for asking data, instance would be passed to ViewModel by constructor, when it would be created by ViewModelFactory. 
+Also FeedViewModel makes the periodic checking for new Articles by running some Runnable on handler.
 
 Here 
 ```Java
@@ -61,3 +62,26 @@ ViewModleFactory
 class provides the ViewModel instances.
 
 If you need other view models you can add those creation in this class, because here we can pass some ojects to view model constructor. Here I passed the instance of Repositroy to FeedViewModel.
+
+For threading I have 
+```Java
+MyExecutor
+```
+singlton class, which have 3 instances of Executor, for UI thread, for DB requests and for NETWORK request. Also it has one thread for periodic requests with delay. For making requests on some thread you must call 
+```Java
+MyExecutor.getInstance().lunchOn(LunchOn, Runnable)
+```
+For RecyclerView paged scroll I have 
+```Java
+PagedScroll
+```
+class, which must be created with RecyclerView instance, and PagedScroll.Callback instance which have two methods 
+```Java
+onLoadMore()
+```
+and 
+```Java
+isLoading()
+```
+You can set loadingThreshold integer  and loadForFirstTime boolean when you build the PagedScroll.
+First parameter defines how many items must be remain for scrolling down before making onLoadMore call. And the second parameter is for calling onLoadMore method one time when PagedScroll instance will be created.
