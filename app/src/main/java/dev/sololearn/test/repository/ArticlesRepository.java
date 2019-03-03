@@ -136,7 +136,7 @@ public class ArticlesRepository {
         localDataSource.insert(article);
     }
 
-    public LiveData<PagedList<Article>> getLocalArticles(PagedList.BoundaryCallback<Article> callback) {
+    public LiveData<PagedList<Article>> getArticles(PagedList.BoundaryCallback<Article> callback) {
         PagedList.Config config = new PagedList.Config.Builder().setPageSize(Constants.PAGE_SIZE).build();
 
         return new LivePagedListBuilder<>(localDataSource.getArticles(), config)

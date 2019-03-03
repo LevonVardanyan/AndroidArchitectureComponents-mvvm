@@ -2,7 +2,6 @@ package dev.sololearn.test.feed;
 
 import android.app.Application;
 import android.preference.PreferenceManager;
-import android.view.View;
 
 import java.util.List;
 
@@ -78,7 +77,7 @@ public class FeedViewModel extends AndroidViewModel {
         }
         if (items == null) {
             isInitialLoading.set(true);
-            items = articlesRepository.getLocalArticles(new PagedList.BoundaryCallback<Article>() {
+            items = articlesRepository.getArticles(new PagedList.BoundaryCallback<Article>() {
                 @Override
                 public void onZeroItemsLoaded() {
                     super.onZeroItemsLoaded();
