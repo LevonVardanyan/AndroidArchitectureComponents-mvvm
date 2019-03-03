@@ -57,7 +57,7 @@ Also FeedViewModel makes the periodic checking for new Articles by running some 
 
 Here 
 ```Java
-ViewModleFactory
+ViewModelFactory
 ```
 class provides the ViewModel instances.
 
@@ -85,3 +85,8 @@ isLoading()
 ```
 You can set **loadingThreshold** integer  and **loadForFirstTime** boolean when you build the PagedScroll.
 First parameter defines how many items must be remain for scrolling down before making onLoadMore call. And the second parameter is for calling onLoadMore method one time when PagedScroll instance will be created.
+**onLoadMore** method will be called when 
+```Java
+totalItemCount - visibleItemCount <= firstVisibleItemPosition + this.loadingThreshold
+```
+or **loadForFirstTime** boolean is true. **isLoading** method must return true if currently you make request and false otherwise
