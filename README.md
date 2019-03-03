@@ -25,9 +25,11 @@ I have two sources of data Remote from theguardian's api and from database where
 Thats mean there are two interfaces:
 ```Java
 BaseLocalDataSource
+```
 and
 ```Java
 BaseRemoteDataSource
+```
 They provides Api for working with data. Every local dataSource implements first one, and remote dataSource implements the second one.
 Then I have one implementation for LocalDataSource: RoomLocalDataSource and one for remote: RetrofitRemoteDataSource.
 This implementations are singlton because must be one instnace of these for all app.
