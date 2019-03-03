@@ -154,9 +154,6 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         }
         switch (id) {
             case R.id.open_full_article:
-                if (activity == null) {
-                    return;
-                }
                 Intent showArticleIntent = new Intent();
                 showArticleIntent.setAction(Intent.ACTION_VIEW);
                 showArticleIntent.setData(Uri.parse(currentArticle.webUrl));
@@ -174,7 +171,11 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
                 });
                 break;
             case R.id.pin_unpin_article:
-                saveArticleThumbnail(() -> feedViewModel.pinUnPinArticle(currentArticle));
+                if (currentArticle.pinned) {
+                    feedViewModel.pinUnPinArticle(currentArticle);
+                } else {
+                    saveArticleThumbnail(() -> feedViewModel.pinUnPinArticle(currentArticle));
+                }
                 break;
         }
     }

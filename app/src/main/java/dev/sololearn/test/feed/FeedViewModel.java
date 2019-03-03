@@ -52,7 +52,7 @@ public class FeedViewModel extends AndroidViewModel {
                     isNewArticlesAvailable.setValue(true);
                 }
             });
-            MyExecutor.getInstance().lunchPeriodic(this, 2000);
+            MyExecutor.getInstance().lunchPeriodic(this, 30000);
         }
     };
 
@@ -79,7 +79,7 @@ public class FeedViewModel extends AndroidViewModel {
     }
 
     void startPeriodicChecking() {
-        MyExecutor.getInstance().lunchPeriodic(checkForNewArticlesRunnable, 2000);
+        MyExecutor.getInstance().lunchPeriodic(checkForNewArticlesRunnable, 30000);
     }
 
     void startOffline() {
@@ -119,6 +119,7 @@ public class FeedViewModel extends AndroidViewModel {
                     items.setValue(currentList);
                 }
                 isInitialLoading.set(false);
+                isEmpty.set(false);
             }
 
             @Override

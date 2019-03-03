@@ -61,9 +61,7 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
         MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
             List<Article> articles = articlesDao.getAllArticles();
             MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () -> {
-                if (!articles.isEmpty()) {
-                    getDataCallback.onSuccess(articles);
-                }
+                getDataCallback.onSuccess(articles);
             });
 
         });

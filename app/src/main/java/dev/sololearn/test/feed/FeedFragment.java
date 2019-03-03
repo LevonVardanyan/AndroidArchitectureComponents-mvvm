@@ -102,7 +102,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         glideRequestManager = GlideApp.with(this);
 
         initPinnedContainer();
-        setupFeedItemsAdapter();
+        setupFeedItemsAdapter(true);
         setupPinnedItemsAdapter();
         setupObserversAndStart();
 
@@ -231,7 +231,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         }));
     }
 
-    private void setupFeedItemsAdapter() {
+    private void setupFeedItemsAdapter(boolean regiesterPagedScroll) {
         feedItemsAdapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
         feedItemsAdapter.setFeedStyle(feedStyle);
         if (feedStyle == FEED_STYLE_LIST) {
@@ -250,8 +250,10 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             }
         }
         binding.articlesRecyclerView.setAdapter(feedItemsAdapter);
-        PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
-                .setLoadingThreshold(5).setLoadForFirstTime(isFirstOpen).build();
+        if (regiesterPagedScroll) {
+            PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
+                    .setLoadingThreshold(5).setLoadForFirstTime(isFirstOpen && Utils.checkInternetConnection(getActivity())).build();
+        }
         feedViewModel.getItems().observe(this, articles -> {
             if (articles != null) {
                 feedItemsAdapter.setItems(articles);
@@ -289,10 +291,10 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         networkStateReceiver.addListener(new NetworkStateReceiver.NetworkStateListener() {
             @Override
             public void onNetworkAvailable(NetworkStateReceiver receiver) {
-                if (feedViewModel.isEmpty.get()) {
-                    feedViewModel.startOnline();
-                    setupFeedItemsAdapter();
-                }
+                feedViewModel.startOnline();
+                setupFeedItemsAdapter(false);
+                PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
+                        .setLoadingThreshold(5).setLoadForFirstTime(true).build();
                 AnimationUtils.hideViewWithAlphaAnimation(binding.noInternetConnection);
             }
 
