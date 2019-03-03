@@ -54,6 +54,19 @@ public class ArticlesRepository {
         return localDataSource.getPinnedArticles();
     }
 
+    public void updateItem(List<Article> articles, Article newArticle) {
+        if (articles != null) {
+            int pos = articles.indexOf(newArticle);
+            if (pos >= 0) {
+                Article changedArticle = articles.get(pos);
+                assert changedArticle != null;
+                changedArticle.pinned = newArticle.pinned;
+                changedArticle.savedForOffline = newArticle.savedForOffline;
+            }
+        }
+    }
+
+
     public void refreshArticles(String newestArticleDate, RefreshListCallback refreshListCallback) {
         MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.NETWORK, () -> {
             ArticleResponse articleResponse = remoteDataSource.getArticlesFromDateSync(newestArticleDate, 1);
