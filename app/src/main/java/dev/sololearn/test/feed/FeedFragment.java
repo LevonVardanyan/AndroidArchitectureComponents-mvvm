@@ -17,8 +17,6 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.RequestManager;
 
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
@@ -33,22 +31,22 @@ import dev.sololearn.test.GlideApp;
 import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.FeedFragmentBinding;
 import dev.sololearn.test.feed.pinned.PinnedItemsAdapter;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.util.AnimationUtils;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.NetworkStateReceiver;
 import dev.sololearn.test.util.OffsetDecoration;
-import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.util.Utils;
 import dev.sololearn.test.util.ViewModelFactory;
 
 public class FeedFragment extends Fragment implements View.OnClickListener {
     static final String TAG = "feedFragment";
-    public final static int FEED_STYLE_LIST = 0;
-    public final static int FEED_STYLE_GRID = 1;
+    final static int FEED_STYLE_LIST = 0;
+    private final static int FEED_STYLE_GRID = 1;
 
     private FeedFragmentBinding binding;
     private FeedViewModel feedViewModel;
-    private FeedArticlesAdapter adapter;
+    private FeedArticlesAdapter feedItemsAdapter;
     private PinnedItemsAdapter pinnedItemsAdapter;
 
     private int feedStyle;
@@ -71,7 +69,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             setSharedElementEnterTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
             setSharedElementReturnTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
             setExitTransition(new Fade());
-            setEnterTransition(new Fade());
         }
     }
 
@@ -128,7 +125,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onStop() {
         super.onStop();
-        if (networkStateReceiver != null) {
+        if (networkStateReceiver != null && getActivity() != null) {
             getActivity().unregisterReceiver(networkStateReceiver);
         }
         feedViewModel.stopChecking();
@@ -140,19 +137,19 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.home_page_menu, menu);
         menu.findItem(R.id.switch_style).setVisible(!Utils.isScreenLargeOrXLarge(getResources()));
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         MenuItem switchStyle = menu.findItem(R.id.switch_style);
         switchStyle.setIcon(feedStyle == FEED_STYLE_LIST ? R.drawable.ic_feed_style_list : R.drawable.ic_feed_style_grid);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.switch_style:
                 if (feedStyle == FEED_STYLE_LIST) {
@@ -165,10 +162,12 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
                     feedStyle = FEED_STYLE_LIST;
                     binding.articlesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 }
-                adapter.setFeedStyle(feedStyle);
-                binding.articlesRecyclerView.setAdapter(adapter);
+                feedItemsAdapter.setFeedStyle(feedStyle);
+                binding.articlesRecyclerView.setAdapter(feedItemsAdapter);
                 sharedPreferences.edit().putInt(Constants.HOME_PAGE_VIEW_STYLE, feedStyle).apply();
-                getActivity().invalidateOptionsMenu();
+                if (getActivity() != null) {
+                    getActivity().invalidateOptionsMenu();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -198,23 +197,23 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void observePinChanges() {
-        feedViewModel.getCloseEvent().observe(this, aBoolean -> feedViewModel.getPinnedItemsCount(count -> {
+        feedViewModel.getPinUnPinEvent().observe(this, aBoolean -> feedViewModel.getPinnedItemsCount(count -> {
+            Activity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
             int panelHeight = getResources().getDimensionPixelSize(R.dimen.pinned_items_container_height);
             int panelWidth = getResources().getDimensionPixelSize(R.dimen.pinned_items_landscape_container_width);
             if (count == 1 && !isPinnedPanelOpened) {
-                Activity activity = getActivity();
-                if (activity == null) {
-                    return;
-                }
                 isPinnedPanelOpened = true;
-                if (Utils.isLandscape(getActivity())) {
+                if (Utils.isLandscape(activity)) {
                     AnimationUtils.showAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
                 } else {
                     AnimationUtils.showAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
                 }
             } else if (count == 0 && isPinnedPanelOpened) {
                 isPinnedPanelOpened = false;
-                if (Utils.isLandscape(getActivity())) {
+                if (Utils.isLandscape(activity)) {
                     AnimationUtils.hideAnimateViewWidth(binding.pinnedItemsContainer, panelWidth);
                 } else {
                     AnimationUtils.hideAnimateViewHeight(binding.pinnedItemsContainer, panelHeight);
@@ -224,8 +223,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setupFeedItemsAdapter() {
-        adapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
-        adapter.setFeedStyle(feedStyle);
+        feedItemsAdapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
+        feedItemsAdapter.setFeedStyle(feedStyle);
         if (feedStyle == FEED_STYLE_LIST) {
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
             binding.articlesRecyclerView.setLayoutManager(linearLayoutManager);
@@ -241,18 +240,18 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
                 binding.articlesRecyclerView.addItemDecoration(feedItemsOffsetDecoration);
             }
         }
-        binding.articlesRecyclerView.setAdapter(adapter);
+        binding.articlesRecyclerView.setAdapter(feedItemsAdapter);
         PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
                 .setLoadingThreshold(5).setLoadForFirstTime(isInitialOpen).build();
         feedViewModel.getItems().observe(this, articles -> {
             if (articles != null) {
-                adapter.setItems(articles);
+                feedItemsAdapter.setItems(articles);
             }
         });
     }
 
     private void setupPinnedItemsAdapter() {
-        pinnedItemsAdapter = new PinnedItemsAdapter(feedViewModel, new ArrayList<>(0), glideRequestManager);
+        pinnedItemsAdapter = new PinnedItemsAdapter(feedViewModel.getOpenArticleEvent(), glideRequestManager);
         int orientation = Utils.isLandscape(getActivity()) ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL;
         binding.pinnedItemsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
                 orientation, false));
@@ -295,7 +294,9 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
 
             }
         });
-        getActivity().registerReceiver(networkStateReceiver, new IntentFilter(Constants.CONNECTIVITY_CHANGE_ACTION));
+        if (getActivity() != null) {
+            getActivity().registerReceiver(networkStateReceiver, new IntentFilter(Constants.CONNECTIVITY_CHANGE_ACTION));
+        }
     }
 
     @Override

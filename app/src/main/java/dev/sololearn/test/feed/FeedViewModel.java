@@ -2,7 +2,6 @@ package dev.sololearn.test.feed;
 
 import android.app.Application;
 import android.preference.PreferenceManager;
-import android.view.View;
 
 import java.util.List;
 
@@ -15,10 +14,10 @@ import androidx.lifecycle.MutableLiveData;
 import dev.sololearn.test.callback.GetDataCallback;
 import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.repository.ArticlesRepository;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.MyExecutor;
-import dev.sololearn.test.pagedscroll.PagedScroll;
 
 /**
  * FeedViewModel manages all use cases in FeedsActivity
@@ -35,8 +34,8 @@ public class FeedViewModel extends AndroidViewModel {
     private MutableLiveData<List<Article>> items = new MutableLiveData<>();
     private MutableLiveData<ClickArticleEvent> openArticleEvent = new MutableLiveData<>();
     private MutableLiveData<Boolean> isNewArticlesAvailable = new MutableLiveData<>();
-    private ObservableBoolean isInitialLoaded = new ObservableBoolean();
-    private MutableLiveData<Boolean> closeEvent = new MutableLiveData<>();
+    private ObservableBoolean isInitialLoading = new ObservableBoolean();
+    private MutableLiveData<Boolean> pinUnPinEvent = new MutableLiveData<>();
     ObservableBoolean isEmpty = new ObservableBoolean();
     private ArticlesRepository articlesRepository;
     private boolean isLoading;
@@ -75,34 +74,23 @@ public class FeedViewModel extends AndroidViewModel {
         this.articlesRepository = articlesRepository;
     }
 
-    void updateItem(Article article) {
-        List<Article> list = items.getValue();
-        if (list != null) {
-            int pos = list.indexOf(article);
-            if (pos >= 0) {
-                Article changedArticle = list.get(pos);
-                assert changedArticle != null;
-                changedArticle.pinned = article.pinned;
-                changedArticle.savedForOffline = article.savedForOffline;
-            }
-        }
-    }
-
     void startOnline() {
-        isInitialLoaded.set(true);
+        isInitialLoading.set(true);
         MyExecutor.getInstance().lunchOnRefresh(checkForNewArticlesRunnable, 30000);
     }
 
     void startOffline() {
-        isInitialLoaded.set(true);
+        isInitialLoading.set(true);
         articlesRepository.getLocalAllArticles(new GetDataCallback() {
             @Override
             public void onSuccess(List<Article> articles) {
-                items.setValue(articles);
-                isInitialLoaded.set(false);
-                if (items.getValue().size() == 0) {
-                    isEmpty.set(true);
+                if (articles != null) {
+                    items.setValue(articles);
+                    if (items.getValue().size() == 0) {
+                        isEmpty.set(true);
+                    }
                 }
+                isInitialLoading.set(false);
             }
 
             @Override
@@ -112,7 +100,7 @@ public class FeedViewModel extends AndroidViewModel {
         });
     }
 
-    public void loadMore() {
+    private void loadMore() {
         if (items.getValue() == null) {
             articlesRepository.reset();
         }
@@ -127,7 +115,7 @@ public class FeedViewModel extends AndroidViewModel {
                     currentList.addAll(articles);
                     items.setValue(currentList);
                 }
-                isInitialLoaded.set(false);
+                isInitialLoading.set(false);
             }
 
             @Override
@@ -145,15 +133,15 @@ public class FeedViewModel extends AndroidViewModel {
                 articlesRepository.pinArticle(article);
                 articlesRepository.saveArticleForOffline(article);
             }
-            updateItem(article);
-            closeEvent.setValue(true);
+            articlesRepository.updateItem(items.getValue(), article);
+            pinUnPinEvent.setValue(true);
         }
     }
 
     public void saveArticleForOffline(Article article) {
         if (article != null && !article.savedForOffline) {
             articlesRepository.saveArticleForOffline(article);
-            updateItem(article);
+            articlesRepository.updateItem(items.getValue(), article);
         }
     }
 
@@ -175,7 +163,7 @@ public class FeedViewModel extends AndroidViewModel {
         articlesRepository.getPinnedItemsCount(getItemsCountCallback);
     }
 
-    public MutableLiveData<Boolean> getIsNewArticlesAvailable() {
+    MutableLiveData<Boolean> getIsNewArticlesAvailable() {
         return isNewArticlesAvailable;
     }
 
@@ -183,17 +171,13 @@ public class FeedViewModel extends AndroidViewModel {
         return articlesRepository.getNewestArticle();
     }
 
-    public void onArticleClick(@NonNull Article article, @Nullable View[] sharedViews) {
-        openArticleEvent.setValue(new ClickArticleEvent(article, sharedViews));
-    }
-
-    public MutableLiveData<Boolean> getCloseEvent() {
-        return closeEvent;
+    MutableLiveData<Boolean> getPinUnPinEvent() {
+        return pinUnPinEvent;
     }
 
     @NonNull
-    public ObservableBoolean getIsInitialLoaded() {
-        return isInitialLoaded;
+    public ObservableBoolean getIsInitialLoading() {
+        return isInitialLoading;
     }
 
     public ObservableBoolean getIsEmpty() {
@@ -204,7 +188,7 @@ public class FeedViewModel extends AndroidViewModel {
         return openArticleEvent;
     }
 
-    public PagedScroll.Callback getLoadMorePagedCallback() {
+    PagedScroll.Callback getLoadMorePagedCallback() {
         return loadMorePagedCallback;
     }
 }

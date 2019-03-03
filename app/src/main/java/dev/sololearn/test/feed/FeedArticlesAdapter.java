@@ -89,7 +89,7 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
     }
 
     void setItems(List<Article> items) {
-        ArticleItemDiffCallback pinnedItemDiffCallback = new ArticleItemDiffCallback(this.items, items);
+        AdapterOfArticlesDiffCallback pinnedItemDiffCallback = new AdapterOfArticlesDiffCallback(this.items, items);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(pinnedItemDiffCallback);
 
         this.items.clear();
@@ -111,9 +111,5 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
             category = view.findViewById(R.id.article_category);
             publicationDate = view.findViewById(R.id.article_publication_date);
         }
-    }
-
-    public interface ArticleActionListener {
-        void onArticleClicked(Article article);
     }
 }

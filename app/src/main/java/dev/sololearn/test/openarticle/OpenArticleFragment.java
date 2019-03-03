@@ -61,7 +61,6 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
             setSharedElementEnterTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
             setSharedElementReturnTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
             setEnterTransition(new Fade());
-            setExitTransition(new Fade());
         }
     }
 

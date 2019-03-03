@@ -2,9 +2,6 @@ package dev.sololearn.test.feed;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.transition.TransitionInflater;
 import android.view.View;
 
 import java.util.concurrent.TimeUnit;
@@ -32,7 +29,6 @@ public class FeedActivity extends AppCompatActivity {
     private OpenArticleFragment openArticleFragment;
     private FeedViewModel feedViewModel;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +47,7 @@ public class FeedActivity extends AppCompatActivity {
                     feedFragment, FeedFragment.TAG).addToBackStack(null).commit();
         }
 
-        feedViewModel.getCloseEvent().observe(this, aBoolean -> openFeedFragment());
+        feedViewModel.getPinUnPinEvent().observe(this, aBoolean -> openFeedFragment());
     }
 
     private static FeedViewModel obtainViewModel(FragmentActivity activity) {
@@ -85,7 +81,7 @@ public class FeedActivity extends AppCompatActivity {
             finish();
             return;
         } else {
-            getSupportFragmentManager().popBackStackImmediate();
+            getSupportFragmentManager().popBackStack();
         }
 //        super.onBackPressed();
     }
@@ -106,11 +102,7 @@ public class FeedActivity extends AppCompatActivity {
 
     private void openFeedFragment() {
         if (openArticleFragment.isAdded()) {
-            getSupportFragmentManager().popBackStackImmediate();
-        } else {
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.root_container, feedFragment, FeedFragment.TAG);
-            fragmentTransaction.commit();
+            getSupportFragmentManager().popBackStack();
         }
     }
 

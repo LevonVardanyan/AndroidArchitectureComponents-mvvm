@@ -9,12 +9,12 @@ import dev.sololearn.test.datamodel.local.Article;
 /**
  * diff callback for adapters that contains itemsList of Articles
  */
-public class ArticleItemDiffCallback extends DiffUtil.Callback {
+public class AdapterOfArticlesDiffCallback extends DiffUtil.Callback {
 
     private List<Article> oldList;
     private List<Article> newList;
 
-    public ArticleItemDiffCallback(List<Article> oldList, List<Article> newList) {
+    public AdapterOfArticlesDiffCallback(List<Article> oldList, List<Article> newList) {
         this.oldList = oldList;
         this.newList = newList;
     }

@@ -1,78 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_card"
+    android:layout_width="@dimen/grid_feed_item_width"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/feed_item_margin_bottom"
+    android:onClick="@{() ->listener.onArticleClicked(article)}"
+    app:cardElevation="@dimen/feed_item_elevation">
 
-    <data>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <import type="android.view.View.OnClickListener" />
+        <ImageView
+            android:id="@+id/article_thumbnail"
+            android:layout_width="@dimen/grid_feed_item_width"
+            android:layout_height="@dimen/grid_feed_item_image_height"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintTop_toTopOf="@+id/root" />
 
-        <import type="dev.sololearn.test.util.Constants" />
+        <TextView
+            android:id="@+id/article_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/feed_item_title_margin_start_end"
+            android:layout_marginTop="@dimen/feed_item_title_margin_top"
+            android:layout_marginEnd="@dimen/feed_item_title_margin_start_end"
+            android:gravity="start"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/feed_item_text_size"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/root"
+            app:layout_constraintTop_toBottomOf="@+id/article_thumbnail"
+            tools:text="This is a test article yes this is very test article" />
 
-        <variable
-            name="article"
-            type="dev.sololearn.test.datamodel.local.Article" />
+        <TextView
+            android:id="@+id/article_category"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/feed_item_category_margin_top_bottom"
+            android:layout_marginBottom="@dimen/feed_item_category_margin_top_bottom"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/feed_item_text_size"
+            app:layout_constraintBottom_toBottomOf="@+id/root"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            app:layout_constraintStart_toStartOf="@+id/article_title"
+            app:layout_constraintTop_toBottomOf="@+id/article_title"
+            tools:text="Test category" />
 
-        <variable
-            name="listener"
-            type="dev.sololearn.test.feed.FeedArticlesAdapter.ArticleActionListener" />
-    </data>
-
-    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/root_card"
-        android:layout_width="@dimen/grid_feed_item_width"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/feed_item_margin_bottom"
-        android:onClick="@{() ->listener.onArticleClicked(article)}"
-        app:cardElevation="@dimen/feed_item_elevation">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/root"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/article_thumbnail"
-                android:layout_width="@dimen/grid_feed_item_width"
-                android:layout_height="@dimen/grid_feed_item_image_height"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                app:layout_constraintEnd_toEndOf="@+id/root"
-                app:layout_constraintStart_toStartOf="@+id/root"
-                app:layout_constraintTop_toTopOf="@+id/root" />
-
-            <TextView
-                android:id="@+id/article_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/feed_item_title_margin_start_end"
-                android:layout_marginTop="@dimen/feed_item_title_margin_top"
-                android:layout_marginEnd="@dimen/feed_item_title_margin_start_end"
-                android:gravity="start"
-                android:text="@{article.title}"
-                android:textColor="@android:color/black"
-                android:textSize="@dimen/feed_item_text_size"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="@+id/root"
-                app:layout_constraintStart_toStartOf="@+id/root"
-                app:layout_constraintTop_toBottomOf="@+id/article_thumbnail"
-                tools:text="This is a test article yes this is very test article" />
-
-            <TextView
-                android:id="@+id/article_category"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/feed_item_category_margin_top_bottom"
-                android:layout_marginBottom="@dimen/feed_item_category_margin_top_bottom"
-                android:text="@{article.category}"
-                android:textColor="@android:color/black"
-                android:textSize="@dimen/feed_item_text_size"
-                app:layout_constraintBottom_toBottomOf="@+id/root"
-                app:layout_constraintStart_toStartOf="@+id/article_title"
-                app:layout_constraintEnd_toEndOf="@+id/root"
-                app:layout_constraintTop_toBottomOf="@+id/article_title"
-                tools:text="Test category" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-</layout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
