@@ -54,7 +54,7 @@ public class ArticlesRepository {
         return localDataSource.getPinnedArticles();
     }
 
-    public void refreshArticles(String newestArticleDate, List<Article> oldList, RefreshListCallback refreshListCallback) {
+    public void refreshArticles(String newestArticleDate, RefreshListCallback refreshListCallback) {
         MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.NETWORK, () -> {
             ArticleResponse articleResponse = remoteDataSource.getArticlesFromDateSync(newestArticleDate, 1);
             if (articleResponse != null && articleResponse.articlesData != null &&

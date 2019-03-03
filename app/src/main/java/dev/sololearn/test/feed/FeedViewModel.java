@@ -45,7 +45,7 @@ public class FeedViewModel extends AndroidViewModel {
         public void run() {
             String newestDate = PreferenceManager.getDefaultSharedPreferences(getApplication().getApplicationContext())
                     .getString(Constants.PREF_NEWEST_ARTICLE_PUBLICATION_DATE, "");
-            articlesRepository.refreshArticles(newestDate, items.getValue(), isNewItemAdded -> {
+            articlesRepository.refreshArticles(newestDate, isNewItemAdded -> {
                 if (isNewItemAdded) {
                     isNewArticlesAvailable.setValue(true);
                 }
