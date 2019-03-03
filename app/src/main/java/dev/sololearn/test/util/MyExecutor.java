@@ -67,7 +67,7 @@ public class MyExecutor {
 		return refreshExecutor;
 	}
 
-	public void lunchOnRefresh(Runnable runnable, long delay) {
+	public void lunchPeriodic(Runnable runnable, long delay) {
 		refreshExecutor.postDelayed(runnable, delay);
 	}
 

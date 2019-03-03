@@ -44,20 +44,6 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
     }
 
     @Override
-    public void insert(Article article, Runnable callback) {
-        article.lastUpdateTime = System.currentTimeMillis();
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
-            articlesDao.insert(article);
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, callback::run);
-        });
-    }
-
-    @Override
-    public void remove(Article article) {
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> articlesDao.delete(article));
-    }
-
-    @Override
     public LiveData<List<Article>> getPinnedArticles() {
         return articlesDao.getPinnedArticles(true);
     }

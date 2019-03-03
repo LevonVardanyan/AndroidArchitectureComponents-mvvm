@@ -46,7 +46,7 @@ public class Article implements Parcelable {
     public String publicationDate;
 
     public boolean pinned;
-    @ColumnInfo(name = "is_offline")
+    @ColumnInfo(name = "savedForOffline")
     public boolean savedForOffline;
 
     @ColumnInfo(name = "last_updated")

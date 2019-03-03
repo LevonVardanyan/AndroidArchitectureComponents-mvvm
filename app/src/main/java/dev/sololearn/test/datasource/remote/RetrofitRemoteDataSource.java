@@ -55,19 +55,9 @@ public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
     }
 
     @Override
-    public void getArticlesFirstPage(@Nullable GetDataCallback getDataCallback) {
-        getArticlesPage(1, getDataCallback);
-    }
-
-    @Override
     public boolean isNewerArticleExist(@Nullable String lastItemDate) {
         ArticleResponse articleResponse = getArticlesFromDateSync(lastItemDate, 1);
         return articleResponse != null && articleResponse.articlesData.articleList.isEmpty();
-    }
-
-    @Override
-    public void resetPageCounter() {
-        loadedPageCount = 0;
     }
 
     @Override

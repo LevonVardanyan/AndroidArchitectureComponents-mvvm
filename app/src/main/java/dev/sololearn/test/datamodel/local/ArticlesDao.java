@@ -23,13 +23,6 @@ public interface ArticlesDao {
     void insert(Article article);
 
     /**
-     * insert list of articles to db
-     * @param articles inserting list
-     */
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    void insert(List<Article> articles);
-
-    /**
      * get pinned articles list, sorted by time of inserting
      * @param pinned this will be passed true from caller
      * @return list of pinned articles, where every Article.pinned == true
@@ -53,15 +46,6 @@ public interface ArticlesDao {
      */
     @Delete
     void delete(Article article);
-
-    /**
-     * delete all article except pinned and saved articles
-     * This method for clearing cached by app articles
-     * @param pinned will be passed false, true if want to delete pinned
-     * @param savedForOffline will be passed false, true if want to delete saves
-     */
-    @Query(value = "DELETE FROM articles_table WHERE pinned = :pinned AND is_offline = :savedForOffline")
-    void delete(boolean pinned, boolean savedForOffline);
 
 
 }

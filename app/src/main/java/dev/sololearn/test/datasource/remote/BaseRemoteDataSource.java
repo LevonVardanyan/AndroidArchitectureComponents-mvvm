@@ -22,22 +22,11 @@ public interface BaseRemoteDataSource {
     void getArticles(GetDataCallback getDataCallback);
 
     /**
-     * get first page of articles
-     * @param getDataCallback result callback
-     */
-    void getArticlesFirstPage(GetDataCallback getDataCallback);
-
-    /**
      * get is new articles published after our last request
      * @param lastItemDate last saved article publicationDate
      * @return
      */
     boolean isNewerArticleExist(String lastItemDate);
-
-    /**
-     * for reset
-     */
-    void resetPageCounter();
 
     /**
      * this method must work synchronized, and returns the article list since date with pages

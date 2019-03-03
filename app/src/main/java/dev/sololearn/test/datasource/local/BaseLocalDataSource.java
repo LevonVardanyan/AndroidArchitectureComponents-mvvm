@@ -18,19 +18,6 @@ public interface BaseLocalDataSource {
     void insert(Article article);
 
     /**
-     * insert article and return in  callback
-     * @param article inserting article
-     */
-    void insert(Article article, Runnable callback);
-
-
-    /**
-     * remove article
-     * @param article removing article
-     */
-    void remove(Article article);
-
-    /**
      * @return pinned articles list, list where every Article.pinned == true
      */
     LiveData<List<Article>> getPinnedArticles();
