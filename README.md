@@ -17,7 +17,7 @@
 ## Info
 
 Here is project with MVVM architecture and new android architecture components: LiveData, ViewModel, Room, Data Binding, Worker, [Pagin Library see branch with-pagin-library](https://github.com/LevonVardanyan/SoloLearnTest/tree/with-paging-library).
-Used patterns: Repository, Builder, Factory, Singlton
+Used patterns: Repository, Builder, Factory, Singlton, Dependency Injection
 
 ## Structure
 
@@ -38,5 +38,26 @@ This implementations are singlton because must be one instnace of these for all 
 Its better for testability to have one thing with which ViewModel can interact and ask for data or request for inserting data. For making ViewModel independent from choosing data or working on it, (he can only ask for data or request for insert it), I have Repository class which will control data transfer.
 But Repository doesn't know how that data will be got or inserted, he only manages the transfer from dataSource to viewModel. Here Repository has two types of dataSources: one local and one remote, but it doesn't contain Implementation classes for those sources, it only have interface references. Then repository will work with Api provided by dataSources (e.g. BaseLocal or BaseRemote).
 
+Also there is class
+```Java
+RepositoryProvider
+```
+This has only one method which returns the singlton instnace of Repository class. 
+
 RoomLocalDataSource implementation contains the work logic with [Android Room](https://developer.android.com/training/data-storage/room/index.html) framework.
+
 RetrofitRemoteDataSource contains work logic with Retrofit library
+
+My viewModel is 
+```Java
+FeedViewModel
+```
+It manages the connection between View and Data, and saves the app state. It contains LiveData objects for observing by View or Observable objects for using with DataBinding. Also it contains Repository instance for asking data, instance would passed to ViewModel by constructor, when it would created by ViewModelFactory.
+
+Here 
+```Java
+ViewModleFactory
+```
+class provides the ViewModel instances.
+
+If you need other view models you can add those creation in this class, because here we can pass some ojects to view model constructor. Here I passed the instance of Repositroy to FeedViewModel.
