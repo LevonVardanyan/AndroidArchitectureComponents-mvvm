@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">NewsApp</string>
-    <string name="home_page_title">Home</string>
-    <string name="title_activity_show_article">ShowArticleActivity</string>
-    <string name="open_full_article">Open full article</string>
+    <string name="home_page_title" translatable="false">Home</string>
+    <string name="title_activity_show_article" translatable="false">ShowArticleActivity</string>
+    <string name="open_full_article" translatable="false">Open full article</string>
     <string name="article">Article</string>
     <string name="save_for_offline">Save for offline</string>
     <string name="saved">Saved</string>

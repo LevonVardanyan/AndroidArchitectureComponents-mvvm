@@ -3,7 +3,7 @@ package dev.sololearn.test.datasource.local;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import dev.sololearn.test.callback.GetDataCallback;
+import androidx.paging.DataSource;
 import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 
@@ -18,17 +18,14 @@ public interface BaseLocalDataSource {
     void insert(Article article);
 
     /**
-     * insert article and return in  callback
-     * @param article inserting article
+     *
      */
-    void insert(Article article, Runnable callback);
-
+    void insert(List<Article> articles);
 
     /**
-     * remove article
-     * @param article removing article
+     *
      */
-    void remove(Article article);
+    DataSource.Factory<Integer, Article> getArticles();
 
     /**
      * @return pinned articles list, list where every Article.pinned == true
@@ -40,10 +37,6 @@ public interface BaseLocalDataSource {
      */
     void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback);
 
-    /**
-     * get all articles
-     * @param getDataCallback result callback
-     */
-    void getArticles(GetDataCallback getDataCallback);
+    void reset(Runnable endActionCallback);
 
 }

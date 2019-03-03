@@ -33,11 +33,11 @@ import dev.sololearn.test.GlideApp;
 import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.FeedFragmentBinding;
 import dev.sololearn.test.feed.pinned.PinnedItemsAdapter;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.util.AnimationUtils;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.NetworkStateReceiver;
 import dev.sololearn.test.util.OffsetDecoration;
-import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.util.Utils;
 import dev.sololearn.test.util.ViewModelFactory;
 
@@ -48,8 +48,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
 
     private FeedFragmentBinding binding;
     private FeedViewModel feedViewModel;
-    private FeedArticlesAdapter adapter;
-    private PinnedItemsAdapter pinnedItemsAdapter;
+    private FeedArticlesAdapter feedAdapter;
+    private PinnedItemsAdapter pinniesAdapter;
 
     private int feedStyle;
     private boolean isPinnedPanelOpened;
@@ -59,6 +59,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
 
     private RequestManager glideRequestManager;
     private NetworkStateReceiver networkStateReceiver;
+    private StaggeredGridLayoutManager staggeredGridLayoutManager;
+    private LinearLayoutManager linearLayoutManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,21 +104,22 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         binding.setViewmodel(feedViewModel);
         glideRequestManager = GlideApp.with(this);
 
-        boolean isInitialOpenValue = isInitialOpen;
+        if (isInitialOpen) {
+            feedViewModel.reset(this::init);
+        } else {
+            init();
+        }
+        setHasOptionsMenu(true);
+    }
+
+    private void init() {
         initPinnedContainer();
         setupFeedItemsAdapter();
         setupPinnedItemsAdapter();
 
-        if (isInitialOpenValue) {
-            setupObserversAndStart();
-            if (Utils.checkInternetConnection(getActivity())) {
-                feedViewModel.startOnline();
-            } else {
-                feedViewModel.startOffline();
-            }
-            observePinChanges();
-        }
-        setHasOptionsMenu(true);
+        setupObserversAndStart();
+        feedViewModel.start(false).observe(this, articles -> feedAdapter.submitList(articles));
+        observePinChanges();
     }
 
     @Override
@@ -155,18 +158,23 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.switch_style:
+                int[] visibleItemPos = new int[getResources().getInteger(R.integer.staggered_style_column_count)];
                 if (feedStyle == FEED_STYLE_LIST) {
                     feedStyle = FEED_STYLE_GRID;
-                    StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(
+                    visibleItemPos[0] = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    staggeredGridLayoutManager = new StaggeredGridLayoutManager(
                             getResources().getInteger(R.integer.staggered_style_column_count),
                             StaggeredGridLayoutManager.VERTICAL);
                     binding.articlesRecyclerView.setLayoutManager(staggeredGridLayoutManager);
                 } else {
                     feedStyle = FEED_STYLE_LIST;
-                    binding.articlesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+                    staggeredGridLayoutManager.findFirstCompletelyVisibleItemPositions(visibleItemPos);
+                    linearLayoutManager = new LinearLayoutManager(getActivity());
+                    binding.articlesRecyclerView.setLayoutManager(linearLayoutManager);
                 }
-                adapter.setFeedStyle(feedStyle);
-                binding.articlesRecyclerView.setAdapter(adapter);
+                feedAdapter.setFeedStyle(feedStyle);
+                binding.articlesRecyclerView.setAdapter(feedAdapter);
+                binding.articlesRecyclerView.scrollToPosition(visibleItemPos[0]);
                 sharedPreferences.edit().putInt(Constants.HOME_PAGE_VIEW_STYLE, feedStyle).apply();
                 getActivity().invalidateOptionsMenu();
                 break;
@@ -224,16 +232,16 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setupFeedItemsAdapter() {
-        adapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
-        adapter.setFeedStyle(feedStyle);
+        feedAdapter = new FeedArticlesAdapter(getActivity(), feedViewModel.getOpenArticleEvent(), glideRequestManager);
+        feedAdapter.setFeedStyle(feedStyle);
         if (feedStyle == FEED_STYLE_LIST) {
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+            linearLayoutManager = new LinearLayoutManager(getActivity());
             binding.articlesRecyclerView.setLayoutManager(linearLayoutManager);
             if (binding.articlesRecyclerView.getItemDecorationCount() == 0) {
                 binding.articlesRecyclerView.addItemDecoration(feedItemsOffsetDecoration);
             }
         } else {
-            StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(
+            staggeredGridLayoutManager = new StaggeredGridLayoutManager(
                     getResources().getInteger(R.integer.staggered_style_column_count),
                     StaggeredGridLayoutManager.VERTICAL);
             binding.articlesRecyclerView.setLayoutManager(staggeredGridLayoutManager);
@@ -241,24 +249,19 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
                 binding.articlesRecyclerView.addItemDecoration(feedItemsOffsetDecoration);
             }
         }
-        binding.articlesRecyclerView.setAdapter(adapter);
+        binding.articlesRecyclerView.setAdapter(feedAdapter);
         PagedScroll.with(binding.articlesRecyclerView, feedViewModel.getLoadMorePagedCallback())
                 .setLoadingThreshold(5).setLoadForFirstTime(isInitialOpen).build();
-        feedViewModel.getItems().observe(this, articles -> {
-            if (articles != null) {
-                adapter.setItems(articles);
-            }
-        });
     }
 
     private void setupPinnedItemsAdapter() {
-        pinnedItemsAdapter = new PinnedItemsAdapter(feedViewModel, new ArrayList<>(0), glideRequestManager);
+        pinniesAdapter = new PinnedItemsAdapter(feedViewModel, new ArrayList<>(0), glideRequestManager);
         int orientation = Utils.isLandscape(getActivity()) ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL;
         binding.pinnedItemsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
                 orientation, false));
-        binding.pinnedItemsRecyclerView.setAdapter(pinnedItemsAdapter);
+        binding.pinnedItemsRecyclerView.setAdapter(pinniesAdapter);
         feedViewModel.getPinnedItems().observe(this, articles -> {
-            pinnedItemsAdapter.setItems(articles);
+            pinniesAdapter.setItems(articles);
 
             binding.pinnedItemsRecyclerView.scrollTo(0, 0);
         });
@@ -282,7 +285,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onNetworkAvailable(NetworkStateReceiver receiver) {
                 if (feedViewModel.isEmpty.get()) {
-                    feedViewModel.startOnline();
+                    feedViewModel.start(true).observe(FeedFragment.this, articles -> feedAdapter.submitList(articles));
                     setupFeedItemsAdapter();
                 }
                 AnimationUtils.hideViewWithAlphaAnimation(binding.noInternetConnection);

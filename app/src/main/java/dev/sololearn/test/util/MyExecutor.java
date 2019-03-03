@@ -55,19 +55,12 @@ public class MyExecutor {
 		}
 	}
 
-	public Executor getNetworkExecutor() {
-		return networkExecutor;
-	}
-
-	public Executor getDbExecutor() {
-		return dbExecutor;
-	}
-
 	public Handler getRefreshExecutor() {
 		return refreshExecutor;
 	}
 
-	public void lunchOnRefresh(Runnable runnable, long delay) {
+	public void lunchPeriodic(Runnable runnable, long delay) {
+		refreshExecutor.removeCallbacks(runnable);
 		refreshExecutor.postDelayed(runnable, delay);
 	}
 

@@ -3,6 +3,9 @@ package dev.sololearn.test.util;
 public class Constants {
     public final static String CONNECTIVITY_CHANGE_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
 
+    public static final int PAGE_SIZE = 20;
+    public static final int PAGE_SIZE_FROM_DATE = 50;
+
     //extra keys
     public static final String EXTRA_ARTICLE = "article";
     public static final String EXTRA_PINNED = "pinned";

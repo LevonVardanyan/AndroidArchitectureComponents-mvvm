@@ -12,13 +12,13 @@ import androidx.databinding.ObservableBoolean;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import dev.sololearn.test.callback.GetDataCallback;
+import androidx.paging.PagedList;
 import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
+import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.repository.ArticlesRepository;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.MyExecutor;
-import dev.sololearn.test.pagedscroll.PagedScroll;
 
 /**
  * FeedViewModel manages all use cases in FeedsActivity
@@ -30,12 +30,10 @@ import dev.sololearn.test.pagedscroll.PagedScroll;
  * data and how that data will be reached to him, only thing he does, calling methods on repository.
  */
 public class FeedViewModel extends AndroidViewModel {
-
-
-    private MutableLiveData<List<Article>> items = new MutableLiveData<>();
+    private LiveData<PagedList<Article>> items;
     private MutableLiveData<ClickArticleEvent> openArticleEvent = new MutableLiveData<>();
     private MutableLiveData<Boolean> isNewArticlesAvailable = new MutableLiveData<>();
-    private ObservableBoolean isInitialLoaded = new ObservableBoolean();
+    private ObservableBoolean isInitialLoading = new ObservableBoolean();
     private MutableLiveData<Boolean> closeEvent = new MutableLiveData<>();
     ObservableBoolean isEmpty = new ObservableBoolean();
     private ArticlesRepository articlesRepository;
@@ -47,13 +45,12 @@ public class FeedViewModel extends AndroidViewModel {
         public void run() {
             String newestDate = PreferenceManager.getDefaultSharedPreferences(getApplication().getApplicationContext())
                     .getString(Constants.PREF_NEWEST_ARTICLE_PUBLICATION_DATE, "");
-            articlesRepository.refreshArticles(newestDate, items.getValue(), (result, isNewItemAdded) -> {
-                items.setValue(result);
+            articlesRepository.refreshArticles(newestDate, items.getValue(), isNewItemAdded -> {
                 if (isNewItemAdded) {
                     isNewArticlesAvailable.setValue(true);
                 }
             });
-            MyExecutor.getInstance().lunchOnRefresh(this, 30000);
+            MyExecutor.getInstance().lunchPeriodic(this, 30000);
         }
     };
 
@@ -88,52 +85,35 @@ public class FeedViewModel extends AndroidViewModel {
         }
     }
 
-    void startOnline() {
-        isInitialLoaded.set(true);
-        MyExecutor.getInstance().lunchOnRefresh(checkForNewArticlesRunnable, 30000);
-    }
-
-    void startOffline() {
-        isInitialLoaded.set(true);
-        articlesRepository.getLocalAllArticles(new GetDataCallback() {
-            @Override
-            public void onSuccess(List<Article> articles) {
-                items.setValue(articles);
-                isInitialLoaded.set(false);
-                if (items.getValue().size() == 0) {
-                    isEmpty.set(true);
-                }
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-
-            }
-        });
-    }
-
-    public void loadMore() {
-        if (items.getValue() == null) {
-            articlesRepository.reset();
+    LiveData<PagedList<Article>> start(boolean resetAndStart) {
+        if (resetAndStart) {
+            items = null;
         }
-        articlesRepository.getRemoteArticlesPage(new GetDataCallback() {
-            @Override
-            public void onSuccess(List<Article> articles) {
-                isLoading = false;
-                List<Article> currentList = items.getValue();
-                if (currentList == null) {
-                    items.setValue(articles);
-                } else {
-                    currentList.addAll(articles);
-                    items.setValue(currentList);
+        if (items == null) {
+            isInitialLoading.set(true);
+            items = articlesRepository.getLocalArticles(new PagedList.BoundaryCallback<Article>() {
+                @Override
+                public void onZeroItemsLoaded() {
+                    super.onZeroItemsLoaded();
                 }
-                isInitialLoaded.set(false);
-            }
 
-            @Override
-            public void onFailure(String errorMessage) {
+                @Override
+                public void onItemAtFrontLoaded(@NonNull Article itemAtFront) {
+                    super.onItemAtFrontLoaded(itemAtFront);
+                    isInitialLoading.set(false);
+                    isEmpty.set(false);
+                }
+            });
+        }
+        MyExecutor.getInstance().lunchPeriodic(checkForNewArticlesRunnable, 30000);
+        return items;
+    }
 
-            }
+    private void loadMore() {
+        articlesRepository.addMorePage(() -> {
+            isLoading = false;
+            isEmpty.set(false);
+            isInitialLoading.set(false);
         });
     }
 
@@ -162,11 +142,6 @@ public class FeedViewModel extends AndroidViewModel {
     }
 
     @Nullable
-    LiveData<List<Article>> getItems() {
-        return items;
-    }
-
-    @Nullable
     LiveData<List<Article>> getPinnedItems() {
         return articlesRepository.getPinnedItems();
     }
@@ -192,8 +167,8 @@ public class FeedViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public ObservableBoolean getIsInitialLoaded() {
-        return isInitialLoaded;
+    public ObservableBoolean getIsInitialLoading() {
+        return isInitialLoading;
     }
 
     public ObservableBoolean getIsEmpty() {
@@ -206,5 +181,9 @@ public class FeedViewModel extends AndroidViewModel {
 
     public PagedScroll.Callback getLoadMorePagedCallback() {
         return loadMorePagedCallback;
+    }
+
+    public void reset(Runnable endActionCallback) {
+        articlesRepository.reset(endActionCallback);
     }
 }

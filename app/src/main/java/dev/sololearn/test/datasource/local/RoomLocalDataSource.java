@@ -5,7 +5,7 @@ import android.content.Context;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import dev.sololearn.test.callback.GetDataCallback;
+import androidx.paging.DataSource;
 import dev.sololearn.test.callback.GetItemsCountCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.local.ArticlesDao;
@@ -44,22 +44,17 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
     }
 
     @Override
-    public void insert(Article article, Runnable callback) {
-        article.lastUpdateTime = System.currentTimeMillis();
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
-            articlesDao.insert(article);
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, callback::run);
-        });
-    }
-
-    @Override
-    public void remove(Article article) {
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> articlesDao.delete(article));
+    public void insert(List<Article> articles) {
+        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> articlesDao.insert(articles));
     }
 
     @Override
     public LiveData<List<Article>> getPinnedArticles() {
         return articlesDao.getPinnedArticles(true);
+    }
+
+    public DataSource.Factory<Integer, Article> getArticles() {
+        return articlesDao.getArticles();
     }
 
     @Override
@@ -71,16 +66,10 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
     }
 
     @Override
-    public void getArticles(GetDataCallback getDataCallback) {
+    public void reset(Runnable endActionCallback) {
         MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
-            List<Article> articles = articlesDao.getAllArticles();
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () -> {
-                if (!articles.isEmpty()) {
-                    getDataCallback.onSuccess(articles);
-                }
-            });
-
+            articlesDao.delete(false, false);
+            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, endActionCallback);
         });
     }
-
 }

@@ -20,29 +20,30 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import dev.sololearn.test.R;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.util.Constants;
+import dev.sololearn.test.util.Utils;
 
 /**
  * this adapter will manage Articles in Feed
  */
-public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapter.ArticleItemViewHolder> {
+public class FeedArticlesAdapter extends PagedListAdapter<Article, FeedArticlesAdapter.ArticleItemViewHolder> {
 
     private RequestManager requestManager;
     private MutableLiveData<ClickArticleEvent> clickArticle;
     private Context context;
-    private List<Article> items;
     private int feedStyle;
 
     FeedArticlesAdapter(Context context, MutableLiveData<ClickArticleEvent> clickArticle,
                         RequestManager requestManager) {
+        super(Article.DIFF_CALLBACK);
         this.context = context;
         this.requestManager = requestManager;
         this.clickArticle = clickArticle;
-        this.items = new ArrayList<>(0);
     }
 
     void setFeedStyle(int feedStyle) {
@@ -62,13 +63,13 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
     @Override
     public void onBindViewHolder(@NonNull FeedArticlesAdapter.ArticleItemViewHolder holder, int position) {
         int pos = holder.getAdapterPosition();
-        Article article = items.get(pos);
+        Article article = getItem(pos);
         ViewCompat.setTransitionName(holder.thumbnail, Constants.ARTICLE_IMAGE_TRANSACTION_NAME + position);
         if (article != null && article.articleFields != null) {
             holder.title.setText(article.title);
             holder.category.setText(article.category);
             if (holder.publicationDate != null) {
-                holder.publicationDate.setText(article.publicationDate);
+                holder.publicationDate.setText(Utils.convertFromString(article.publicationDate).toString());
             }
             holder.itemView.setOnClickListener(v -> clickArticle.setValue(new ClickArticleEvent(article, new View[]{holder.thumbnail})));
             if (article.savedForOffline && article.articleFields.articleThumbnailPath != null) {
@@ -81,20 +82,6 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
                         .into(holder.thumbnail);
             }
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return items.size();
-    }
-
-    void setItems(List<Article> items) {
-        ArticleItemDiffCallback pinnedItemDiffCallback = new ArticleItemDiffCallback(this.items, items);
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(pinnedItemDiffCallback);
-
-        this.items.clear();
-        this.items.addAll(items);
-        diffResult.dispatchUpdatesTo(this);
     }
 
     class ArticleItemViewHolder extends RecyclerView.ViewHolder {
@@ -113,7 +100,4 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
         }
     }
 
-    public interface ArticleActionListener {
-        void onArticleClicked(Article article);
-    }
 }

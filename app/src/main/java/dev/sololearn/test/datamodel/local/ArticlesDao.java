@@ -3,6 +3,7 @@ package dev.sololearn.test.datamodel.local;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
+import androidx.paging.DataSource;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -38,30 +39,24 @@ public interface ArticlesDao {
     LiveData<List<Article>> getPinnedArticles(boolean pinned);
 
     /**
-     * get all articles from db
-     * @return list of all articles from db, sorted by publication date
-     */
-    @Query(value = "SELECT * FROM articles_table ORDER BY publicationDate DESC")
-    List<Article> getAllArticles();
-
-    @Query(value = "SELECT Count(*) FROM articles_table WHERE pinned = :pinned")
-    int getPinnedItemsCountSync(boolean pinned);
-
-    /**
-     * delete single article from db
-     * @param article deleting article
-     */
-    @Delete
-    void delete(Article article);
-
-    /**
      * delete all article except pinned and saved articles
      * This method for clearing cached by app articles
      * @param pinned will be passed false, true if want to delete pinned
-     * @param savedForOffline will be passed false, true if want to delete saves
+     * @param saved will be passed false, true if want to delete saves
      */
-    @Query(value = "DELETE FROM articles_table WHERE pinned = :pinned AND is_offline = :savedForOffline")
-    void delete(boolean pinned, boolean savedForOffline);
+    @Query(value = "DELETE FROM articles_table WHERE pinned = :pinned AND savedForOffline = :saved")
+    void delete(boolean pinned, boolean saved);
 
+    @Query(value = "SELECT * FROM articles_table ORDER BY publicationDate DESC")
+    DataSource.Factory<Integer, Article> getArticles();
+
+
+    /**
+     *
+     * @param pinned
+     * @return
+     */
+    @Query(value = "SELECT Count(*) FROM articles_table WHERE pinned = :pinned")
+    int getPinnedItemsCountSync(boolean pinned);
 
 }

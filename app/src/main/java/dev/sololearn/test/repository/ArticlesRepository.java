@@ -5,15 +5,18 @@ import java.util.List;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 import dev.sololearn.test.callback.GetDataCallback;
-import dev.sololearn.test.callback.RefreshListCallback;
 import dev.sololearn.test.callback.GetItemsCountCallback;
+import dev.sololearn.test.callback.RefreshListCallback;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.remote.RequestConstants;
 import dev.sololearn.test.datamodel.remote.apimodel.ArticleResponse;
 import dev.sololearn.test.datamodel.remote.apimodel.ArticlesData;
 import dev.sololearn.test.datasource.local.BaseLocalDataSource;
 import dev.sololearn.test.datasource.remote.BaseRemoteDataSource;
+import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.MyExecutor;
 
 /**
@@ -58,7 +61,7 @@ public class ArticlesRepository {
                     RequestConstants.RESULT_OK.equalsIgnoreCase(articleResponse.articlesData.status)) {
                 ArticlesData articlesData = articleResponse.articlesData;
                 long remainPageCount = articlesData.pagesCount - 1;
-                List<Article> newArticles = new ArrayList<>(articleResponse.articlesData.articleList);
+                List<Article> newArticles = new ArrayList<>(articlesData.articleList);
                 int page = 2;
                 while (page < remainPageCount) {
                     articleResponse = remoteDataSource.getArticlesFromDateSync(newestArticleDate, page);
@@ -68,30 +71,14 @@ public class ArticlesRepository {
                     }
                     page++;
                 }
-                List<Article> resultList = oldList;
-                boolean isSomethingAdded = checkForNewItems(resultList, newArticles);
+                boolean isSomethingAdded = newArticles.size() > 1;
+                if (isSomethingAdded) {
+                    localDataSource.insert(newArticles);
+                }
                 MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () ->
-                        refreshListCallback.onDataRefreshed(resultList, isSomethingAdded));
+                        refreshListCallback.onDataRefreshed(isSomethingAdded));
             }
         });
-    }
-
-    private boolean checkForNewItems(List<Article> oldArticles, List<Article> newArticles) {
-        List<Article> endList = oldArticles;
-        boolean isSomeItemAdded = false;
-        if (oldArticles != null) {
-            for (int i = newArticles.size() - 1; i >= 0; i--) {
-                Article nextNewItem = newArticles.get(i);
-                int index = oldArticles.indexOf(nextNewItem);
-                if (index < 0) {
-                    endList.add(0, nextNewItem);
-                    isSomeItemAdded = true;
-                } else {
-                    endList.get(index).set(nextNewItem);
-                }
-            }
-        }
-        return isSomeItemAdded;
     }
 
     public void saveArticleForOffline(Article article) {
@@ -99,12 +86,19 @@ public class ArticlesRepository {
         localDataSource.insert(article);
     }
 
-    public void getRemoteArticlesPage(GetDataCallback getDataCallback) {
-        remoteDataSource.getArticles(getDataCallback);
-    }
+    public void addMorePage(Runnable endActionCallback) {
+        remoteDataSource.getArticles(new GetDataCallback() {
+            @Override
+            public void onSuccess(List<Article> articles) {
+                localDataSource.insert(articles);
+                endActionCallback.run();
+            }
 
-    public void getLocalAllArticles(GetDataCallback getDataCallback) {
-        localDataSource.getArticles(getDataCallback);
+            @Override
+            public void onFailure(String errorMessage) {
+
+            }
+        });
     }
 
     public MutableLiveData<String> getNewestArticle() {
@@ -129,8 +123,16 @@ public class ArticlesRepository {
         localDataSource.insert(article);
     }
 
-    public void reset() {
+    public LiveData<PagedList<Article>> getLocalArticles(PagedList.BoundaryCallback<Article> callback) {
+        PagedList.Config config = new PagedList.Config.Builder().setPageSize(Constants.PAGE_SIZE).build();
+
+        return new LivePagedListBuilder<>(localDataSource.getArticles(), config)
+                .setBoundaryCallback(callback).build();
+    }
+
+    public void reset(Runnable endActionCallback) {
         remoteDataSource.reset();
+        localDataSource.reset(endActionCallback);
     }
 
 }

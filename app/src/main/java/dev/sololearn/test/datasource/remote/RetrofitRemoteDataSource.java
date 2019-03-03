@@ -10,6 +10,7 @@ import dev.sololearn.test.datamodel.remote.ApiService;
 import dev.sololearn.test.datamodel.remote.RequestConstants;
 import dev.sololearn.test.datamodel.remote.RetrofitRequestBuilder;
 import dev.sololearn.test.datamodel.remote.apimodel.ArticleResponse;
+import dev.sololearn.test.util.Constants;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -20,9 +21,6 @@ import retrofit2.Response;
  */
 public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
     private static RetrofitRemoteDataSource remoteDataSource;
-
-    private static final int PAGE_SIZE = 20;
-    private static final int PAGE_SIZE_FROM_DATE = 50;
 
     private ApiService apiService;
 
@@ -55,19 +53,9 @@ public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
     }
 
     @Override
-    public void getArticlesFirstPage(@Nullable GetDataCallback getDataCallback) {
-        getArticlesPage(1, getDataCallback);
-    }
-
-    @Override
     public boolean isNewerArticleExist(@Nullable String lastItemDate) {
         ArticleResponse articleResponse = getArticlesFromDateSync(lastItemDate, 1);
         return articleResponse != null && articleResponse.articlesData.articleList.isEmpty();
-    }
-
-    @Override
-    public void resetPageCounter() {
-        loadedPageCount = 0;
     }
 
     @Override
@@ -75,7 +63,7 @@ public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
         ArticleResponse articleResponse = null;
         try {
             articleResponse = apiService.getArticlesFromDate(fromDate, RequestConstants.SHOW_FIELDS_VALUES, RequestConstants.API_KEY_VALUE,
-                    page, PAGE_SIZE_FROM_DATE).execute().body();
+                    page, Constants.PAGE_SIZE_FROM_DATE).execute().body();
             if (articleResponse != null && articleResponse.articlesData != null && articleResponse.articlesData.articleList != null) {
                 if (page == 1) {
                     newestArticleDate.postValue(articleResponse.articlesData.articleList.get(0).publicationDate);
@@ -101,7 +89,7 @@ public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
     @Override
     public void getArticlesPage(int page, GetDataCallback getDataCallback) {
         apiService.getArticles(RequestConstants.SHOW_FIELDS_VALUES,
-                RequestConstants.API_KEY_VALUE, page, PAGE_SIZE)
+                RequestConstants.API_KEY_VALUE, page, Constants.PAGE_SIZE)
                 .enqueue(new Callback<ArticleResponse>() {
                     @Override
                     public void onResponse(Call<ArticleResponse> call, Response<ArticleResponse> response) {
@@ -109,6 +97,7 @@ public class RetrofitRemoteDataSource implements BaseRemoteDataSource {
                         if (articleResponse != null && articleResponse.articlesData != null &&
                                 RequestConstants.RESULT_OK.equalsIgnoreCase(articleResponse.articlesData.status)) {
                             if (getDataCallback != null) {
+                                articleResponse.articlesData.articleList.remove(null);
                                 getDataCallback.onSuccess(articleResponse.articlesData.articleList);
                             }
                             if (page == 1) {

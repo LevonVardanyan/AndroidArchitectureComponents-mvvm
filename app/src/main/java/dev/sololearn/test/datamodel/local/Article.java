@@ -46,7 +46,7 @@ public class Article implements Parcelable {
     public String publicationDate;
 
     public boolean pinned;
-    @ColumnInfo(name = "is_offline")
+    @ColumnInfo(name = "savedForOffline")
     public boolean savedForOffline;
 
     @ColumnInfo(name = "last_updated")
@@ -99,13 +99,20 @@ public class Article implements Parcelable {
 
         @Override
         public boolean areItemsTheSame(@NonNull Article oldItem, @NonNull Article newItem) {
-            return oldItem == newItem;
+            return oldItem.id.equals(newItem.id);
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull Article oldItem, @NonNull Article newItem) {
             return oldItem.equals(newItem);
         }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(@NonNull Article oldItem, @NonNull Article newItem) {
+            return newItem.publicationDate;
+        }
+
     };
 
 
