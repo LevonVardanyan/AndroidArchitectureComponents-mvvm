@@ -88,7 +88,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
         if (getActivity() == null) {
             return;
         }
-        feedViewModel = obtainViewModel(getActivity());
+        feedViewModel = FeedActivity.obtainViewModel(getActivity());
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         int marginStartEnd = getResources().getDimensionPixelSize(R.dimen.feed_item_margin_start_end);
@@ -134,11 +134,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener {
             getActivity().unregisterReceiver(networkStateReceiver);
         }
         feedViewModel.stopChecking();
-    }
-
-    private static FeedViewModel obtainViewModel(FragmentActivity activity) {
-        ViewModelFactory factory = ViewModelFactory.getInstance(activity.getApplication());
-        return ViewModelProviders.of(activity, factory).get(FeedViewModel.class);
     }
 
     @Override

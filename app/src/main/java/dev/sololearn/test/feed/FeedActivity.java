@@ -3,6 +3,7 @@ package dev.sololearn.test.feed;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Spinner;
 
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +51,7 @@ public class FeedActivity extends AppCompatActivity {
         feedViewModel.getPinUnPinEvent().observe(this, aBoolean -> openFeedFragment());
     }
 
-    private static FeedViewModel obtainViewModel(FragmentActivity activity) {
+    public static FeedViewModel obtainViewModel(FragmentActivity activity) {
         ViewModelFactory factory = ViewModelFactory.getInstance(activity.getApplication());
         return ViewModelProviders.of(activity, factory).get(FeedViewModel.class);
     }

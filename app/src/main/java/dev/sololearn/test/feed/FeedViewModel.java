@@ -40,6 +40,8 @@ public class FeedViewModel extends AndroidViewModel {
     private ArticlesRepository articlesRepository;
     private boolean isLoading;
 
+    private MyExecutor myExecutor;
+
 
     private Runnable checkForNewArticlesRunnable = new Runnable() {
         @Override
@@ -52,7 +54,7 @@ public class FeedViewModel extends AndroidViewModel {
                     isNewArticlesAvailable.setValue(true);
                 }
             });
-            MyExecutor.getInstance().lunchPeriodic(this, 30000);
+            myExecutor.lunchPeriodic(this, 30000);
         }
     };
 
@@ -72,6 +74,7 @@ public class FeedViewModel extends AndroidViewModel {
     public FeedViewModel(ArticlesRepository articlesRepository, Application application) {
         super(application);
         this.articlesRepository = articlesRepository;
+        myExecutor = MyExecutor.getInstance();
     }
 
     void startOnline() {
@@ -79,7 +82,7 @@ public class FeedViewModel extends AndroidViewModel {
     }
 
     void startPeriodicChecking() {
-        MyExecutor.getInstance().lunchPeriodic(checkForNewArticlesRunnable, 30000);
+        myExecutor.lunchPeriodic(checkForNewArticlesRunnable, 30000);
     }
 
     void startOffline() {
@@ -150,7 +153,7 @@ public class FeedViewModel extends AndroidViewModel {
     }
 
     void stopChecking() {
-        MyExecutor.getInstance().getRefreshExecutor().removeCallbacks(checkForNewArticlesRunnable);
+        myExecutor.getRefreshExecutor().removeCallbacks(checkForNewArticlesRunnable);
     }
 
     @Nullable

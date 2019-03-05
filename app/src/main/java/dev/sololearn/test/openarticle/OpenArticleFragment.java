@@ -36,6 +36,7 @@ import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.OpenArticleActivityBinding;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.datamodel.local.ArticleFields;
+import dev.sololearn.test.feed.FeedActivity;
 import dev.sololearn.test.feed.FeedViewModel;
 import dev.sololearn.test.util.CacheFileManager;
 import dev.sololearn.test.util.Constants;
@@ -77,7 +78,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         if (getActivity() == null) {
             return;
         }
-        feedViewModel = obtainViewModel(getActivity());
+        feedViewModel = FeedActivity.obtainViewModel(getActivity());
         init();
     }
 
@@ -94,11 +95,6 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         binding.setSaved(isSaved);
         binding.executePendingBindings();
         loadImage(currentArticle);
-    }
-
-    private static FeedViewModel obtainViewModel(FragmentActivity activity) {
-        ViewModelFactory factory = ViewModelFactory.getInstance(activity.getApplication());
-        return ViewModelProviders.of(activity, factory).get(FeedViewModel.class);
     }
 
     private void loadImage(Article article) {

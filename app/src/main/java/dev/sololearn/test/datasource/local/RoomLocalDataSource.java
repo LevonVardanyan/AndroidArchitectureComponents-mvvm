@@ -20,7 +20,7 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
 
     private static RoomLocalDataSource articlesLocalSource;
     private ArticlesDao articlesDao;
-
+    private MyExecutor myExecutor;
 
     public static RoomLocalDataSource getInstance(Context context) {
         if (articlesLocalSource == null) {
@@ -35,12 +35,13 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
 
     private RoomLocalDataSource(Context context) {
         articlesDao = ArticlesDataBase.getInstance(context).getArticlesDao();
+        myExecutor = MyExecutor.getInstance();
     }
 
     @Override
     public void insert(Article article) {
         article.lastUpdateTime = System.currentTimeMillis();
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> articlesDao.insert(article));
+        myExecutor.lunchOn(MyExecutor.LunchOn.DB, () -> articlesDao.insert(article));
     }
 
     @Override
@@ -50,17 +51,17 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
 
     @Override
     public void getPinnedItemsCount(GetItemsCountCallback getItemsCountCallback) {
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
+        myExecutor.lunchOn(MyExecutor.LunchOn.DB, () -> {
             int count = articlesDao.getPinnedItemsCountSync(true);
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () -> getItemsCountCallback.onResult(count));
+            myExecutor.lunchOn(MyExecutor.LunchOn.UI, () -> getItemsCountCallback.onResult(count));
         });
     }
 
     @Override
     public void getArticles(GetDataCallback getDataCallback) {
-        MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.DB, () -> {
+        myExecutor.lunchOn(MyExecutor.LunchOn.DB, () -> {
             List<Article> articles = articlesDao.getAllArticles();
-            MyExecutor.getInstance().lunchOn(MyExecutor.LunchOn.UI, () -> {
+            myExecutor.lunchOn(MyExecutor.LunchOn.UI, () -> {
                 getDataCallback.onSuccess(articles);
             });
 
