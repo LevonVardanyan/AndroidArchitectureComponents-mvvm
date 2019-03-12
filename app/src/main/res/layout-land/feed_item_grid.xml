@@ -20,7 +20,7 @@
             android:layout_width="@dimen/grid_feed_item_width"
             android:layout_height="@dimen/grid_feed_item_image_height"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="@+id/root"
             app:layout_constraintStart_toStartOf="@+id/root"
             app:layout_constraintTop_toTopOf="@+id/root" />

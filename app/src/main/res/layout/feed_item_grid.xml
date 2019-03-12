@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_card"
-    android:layout_width="@dimen/grid_feed_item_width"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/feed_item_margin_bottom"
     app:cardElevation="@dimen/feed_item_elevation">
@@ -18,7 +18,7 @@
             android:id="@+id/article_thumbnail"
             android:layout_width="@dimen/grid_feed_item_width"
             android:layout_height="@dimen/grid_feed_item_height"
-            android:scaleType="fitCenter" />
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/article_title"
