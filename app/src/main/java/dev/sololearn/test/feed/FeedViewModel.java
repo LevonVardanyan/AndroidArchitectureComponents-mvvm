@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.databinding.ObservableBoolean;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -18,6 +17,8 @@ import dev.sololearn.test.pagedscroll.PagedScroll;
 import dev.sololearn.test.repository.ArticlesRepository;
 import dev.sololearn.test.util.Constants;
 import dev.sololearn.test.util.MyExecutor;
+import dev.sololearn.test.util.NetworkStateReceiver;
+import dev.sololearn.test.util.PinUnPinPendingEvent;
 
 /**
  * FeedViewModel manages all use cases in FeedsActivity
@@ -35,8 +36,10 @@ public class FeedViewModel extends AndroidViewModel {
     private MutableLiveData<ClickArticleEvent> openArticleEvent = new MutableLiveData<>();
     private MutableLiveData<Boolean> isNewArticlesAvailable = new MutableLiveData<>();
     private ObservableBoolean isInitialLoading = new ObservableBoolean();
-    private MutableLiveData<Boolean> pinUnPinEvent = new MutableLiveData<>();
-    ObservableBoolean isEmpty = new ObservableBoolean();
+    private MutableLiveData<Boolean> pinUnPinAction = new MutableLiveData<>();
+    private PinUnPinPendingEvent pinUnPinPendingEvent;
+    private MutableLiveData<NetworkStateReceiver.NetworkState> networkState = new MutableLiveData<>();
+    private ObservableBoolean isEmpty = new ObservableBoolean();
     private ArticlesRepository articlesRepository;
     private boolean isLoading;
 
@@ -77,37 +80,17 @@ public class FeedViewModel extends AndroidViewModel {
         myExecutor = MyExecutor.getInstance();
     }
 
-    void startOnline() {
-        isInitialLoading.set(true);
-    }
-
     void startPeriodicChecking() {
         myExecutor.lunchPeriodic(checkForNewArticlesRunnable, 30000);
     }
 
-    void startOffline() {
-        isInitialLoading.set(true);
-        articlesRepository.getLocalAllArticles(new GetDataCallback() {
-            @Override
-            public void onSuccess(List<Article> articles) {
-                if (articles != null) {
-                    items.setValue(articles);
-                    if (items.getValue().size() == 0) {
-                        isEmpty.set(true);
-                    }
-                }
-                isInitialLoading.set(false);
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-
-            }
-        });
+    LiveData<List<Article>> getOfflineItems() {
+        return articlesRepository.getLocalAllArticles();
     }
 
     private void loadMore() {
-        if (items.getValue() == null) {
+        if (items.getValue() == null || getItemsSize() == 0) {
+            isInitialLoading.set(true);
             articlesRepository.reset();
         }
         articlesRepository.getRemoteArticlesPage(new GetDataCallback() {
@@ -132,8 +115,9 @@ public class FeedViewModel extends AndroidViewModel {
         });
     }
 
-    public void pinUnPinArticle(Article article) {
-        if (article != null) {
+    public void executrePendingPinUnPinArticle() {
+        if (pinUnPinPendingEvent != null) {
+            Article article = pinUnPinPendingEvent.getArticle();
             if (article.pinned) {
                 articlesRepository.unpinArticle(article);
             } else {
@@ -141,7 +125,7 @@ public class FeedViewModel extends AndroidViewModel {
                 articlesRepository.saveArticleForOffline(article);
             }
             articlesRepository.updateItem(items.getValue(), article);
-            pinUnPinEvent.setValue(true);
+            pinUnPinPendingEvent = null;
         }
     }
 
@@ -156,12 +140,24 @@ public class FeedViewModel extends AndroidViewModel {
         myExecutor.getRefreshExecutor().removeCallbacks(checkForNewArticlesRunnable);
     }
 
-    @Nullable
     LiveData<List<Article>> getItems() {
         return items;
     }
 
-    @Nullable
+    int getItemsSize() {
+        return items.getValue() == null ? 0 : items.getValue().size();
+    }
+
+    public void setPendingPinUnPinAricle(Article pendingPinUnPinAricle, int action) {
+        this.pinUnPinPendingEvent = new PinUnPinPendingEvent(pendingPinUnPinAricle, action);
+        pinUnPinAction.setValue(true);
+    }
+
+
+    public PinUnPinPendingEvent getPinUnPinPendingEvent() {
+        return pinUnPinPendingEvent;
+    }
+
     LiveData<List<Article>> getPinnedItems() {
         return articlesRepository.getPinnedItems();
     }
@@ -178,8 +174,8 @@ public class FeedViewModel extends AndroidViewModel {
         return articlesRepository.getNewestArticle();
     }
 
-    MutableLiveData<Boolean> getPinUnPinEvent() {
-        return pinUnPinEvent;
+    MutableLiveData<Boolean> getPinUnPinAction() {
+        return pinUnPinAction;
     }
 
     @NonNull
@@ -198,4 +194,19 @@ public class FeedViewModel extends AndroidViewModel {
     PagedScroll.Callback getLoadMorePagedCallback() {
         return loadMorePagedCallback;
     }
+
+    public MutableLiveData<NetworkStateReceiver.NetworkState> getNetworkState() {
+        return networkState;
+    }
+
+    public void setNetworkState(int networkState) {
+        NetworkStateReceiver.NetworkState currentState = this.networkState.getValue();
+        if (currentState == null) {
+            currentState = new NetworkStateReceiver.NetworkState(networkState);
+        } else {
+            currentState.setNetworkState(networkState);
+        }
+        this.networkState.setValue(currentState);
+    }
+
 }

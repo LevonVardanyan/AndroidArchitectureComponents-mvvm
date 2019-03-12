@@ -5,17 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.transition.Fade;
-import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
@@ -25,12 +21,9 @@ import java.io.File;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProviders;
 import dev.sololearn.test.GlideApp;
 import dev.sololearn.test.R;
 import dev.sololearn.test.databinding.OpenArticleActivityBinding;
@@ -40,7 +33,7 @@ import dev.sololearn.test.feed.FeedActivity;
 import dev.sololearn.test.feed.FeedViewModel;
 import dev.sololearn.test.util.CacheFileManager;
 import dev.sololearn.test.util.Constants;
-import dev.sololearn.test.util.ViewModelFactory;
+import dev.sololearn.test.util.PinUnPinPendingEvent;
 
 public class OpenArticleFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "openArticleFragment";
@@ -50,20 +43,6 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
     private ObservableBoolean isSaved = new ObservableBoolean();
     private Article currentArticle;
     private FeedViewModel feedViewModel;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Activity activity = getActivity();
-            if (activity == null) {
-                return;
-            }
-            setSharedElementEnterTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
-            setSharedElementReturnTransition(TransitionInflater.from(activity).inflateTransition(R.transition.image_transform));
-            setEnterTransition(new Fade());
-        }
-    }
 
     @Nullable
     @Override
@@ -107,7 +86,7 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
         }
         postponeEnterTransition();
         GlideApp.with(OpenArticleFragment.this)
-                .asBitmap().diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).load(url).apply(
+                .asBitmap().load(url).apply(
                 RequestOptions.placeholderOf(R.drawable.image_place_holder))
                 .dontAnimate().listener(new RequestListener<Bitmap>() {
             @Override
@@ -168,9 +147,9 @@ public class OpenArticleFragment extends Fragment implements View.OnClickListene
                 break;
             case R.id.pin_unpin_article:
                 if (currentArticle.pinned) {
-                    feedViewModel.pinUnPinArticle(currentArticle);
+                    feedViewModel.setPendingPinUnPinAricle(currentArticle, PinUnPinPendingEvent.MAKE_UN_PIN);
                 } else {
-                    saveArticleThumbnail(() -> feedViewModel.pinUnPinArticle(currentArticle));
+                    saveArticleThumbnail(() -> feedViewModel.setPendingPinUnPinAricle(currentArticle, PinUnPinPendingEvent.MAKE_PIN));
                 }
                 break;
         }

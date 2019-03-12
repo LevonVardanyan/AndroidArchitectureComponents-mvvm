@@ -65,4 +65,22 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
         void onNetworkDisconnected(NetworkStateReceiver receiver);
     }
+
+    public static class NetworkState {
+        public static final int NETWORK_CONNECTED = 1;
+        public static final int NETWORK_DIS_CONNECTED = 2;
+        private int networkState;
+
+        public NetworkState(int networkState) {
+            this.networkState = networkState;
+        }
+
+        public int getNetworkState() {
+            return networkState;
+        }
+
+        public void setNetworkState(int networkState) {
+            this.networkState = networkState;
+        }
+    }
 }

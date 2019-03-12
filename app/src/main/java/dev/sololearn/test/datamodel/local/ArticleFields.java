@@ -24,6 +24,9 @@ public class ArticleFields implements Parcelable {
 	@ColumnInfo(name = "thumbnail_path")
 	public String articleThumbnailPath;
 
+	@ColumnInfo(name = "body")
+	public String body;
+
 	private ArticleFields(Parcel in) {
 		articleThumbnail = in.readString();
 		articleThumbnailPath = in.readString();

@@ -120,6 +120,10 @@ public class ArticlesRepository {
         localDataSource.getArticles(getDataCallback);
     }
 
+    public LiveData<List<Article>> getLocalAllArticles() {
+        return localDataSource.getArticles();
+    }
+
     public MutableLiveData<String> getNewestArticle() {
         return remoteDataSource.getNewestArticle();
     }

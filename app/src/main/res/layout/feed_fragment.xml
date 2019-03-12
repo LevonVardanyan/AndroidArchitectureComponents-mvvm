@@ -17,7 +17,7 @@
 
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/root"
@@ -29,17 +29,17 @@
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:orientation="vertical"
-            tools:context=".feed.FeedActivity"
             app:layout_constraintStart_toStartOf="@+id/root"
-            app:layout_constraintTop_toTopOf="@+id/root">
+            app:layout_constraintTop_toTopOf="@+id/root"
+            app:layout_constraintEnd_toEndOf="@+id/root"
+            tools:context=".feed.FeedActivity">
 
             <LinearLayout
                 android:id="@+id/pinned_items_container"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:orientation="vertical"
+                android:layout_height="@dimen/pinned_items_container_height"
                 android:gravity="center_horizontal"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/title_pinned_articles"
@@ -91,12 +91,10 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/articles_recycler_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginTop="8dp" />
 
         </LinearLayout>
 
@@ -109,11 +107,8 @@
             android:textColor="@android:color/black"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:visibility="@{viewmodel.isEmpty ? View.VISIBLE : View.GONE}"
-            app:layout_constraintBottom_toBottomOf="@+id/root"
-            app:layout_constraintEnd_toEndOf="@+id/root"
-            app:layout_constraintStart_toStartOf="@+id/root"
-            app:layout_constraintTop_toTopOf="@+id/root" />
+            android:layout_gravity="center"
+            android:visibility="@{viewmodel.isEmpty ? View.VISIBLE : View.GONE}"/>
 
         <TextView
             android:id="@+id/no_internet_connection"
@@ -122,27 +117,18 @@
             android:alpha="0"
             android:background="@drawable/no_internet_connection_bg"
             android:gravity="center"
-            android:visibility="gone"
             android:text="@string/no_internet_connection"
             android:textColor="@android:color/white"
             android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="@+id/root"
-            app:layout_constraintStart_toStartOf="@+id/root" />
-
-        <FrameLayout
-            android:id="@+id/show_article_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:visibility="gone"
+            android:layout_gravity="center"/>
 
         <ProgressBar
             style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="@{viewmodel.isInitialLoading ? View.VISIBLE : View.GONE}"
-            app:layout_constraintBottom_toBottomOf="@+id/root"
-            app:layout_constraintEnd_toEndOf="@+id/root"
-            app:layout_constraintStart_toStartOf="@+id/root"
-            app:layout_constraintTop_toTopOf="@+id/root" />
+            android:layout_gravity="center"/>
 
         <TextView
             android:id="@+id/new_articles_available"
@@ -151,25 +137,23 @@
             android:layout_marginTop="32dp"
             android:layout_marginBottom="8dp"
             android:alpha="0"
-            android:visibility="gone"
             android:background="@drawable/new_articles_available_bg"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
+            android:layout_gravity="bottom"
             android:onClick="@{(view) -> listener.onClick(view)}"
             android:text="@string/new_articles"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/no_internet_connection"
-            app:layout_constraintEnd_toEndOf="@+id/root"
-            app:layout_constraintStart_toStartOf="@+id/root" />
+            android:visibility="gone" />
 
         <FrameLayout
             android:id="@+id/open_article_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clickable="false"/>
+            android:clickable="false" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 </layout>

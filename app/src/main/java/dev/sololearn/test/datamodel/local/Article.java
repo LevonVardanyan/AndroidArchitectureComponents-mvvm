@@ -36,6 +36,9 @@ public class Article implements Parcelable {
     @SerializedName("webUrl")
     public String webUrl;
 
+    @SerializedName("apiUrl")
+    public String itemUrl;
+
     @Nullable
     @SerializedName("sectionName")
     public String category;
@@ -93,6 +96,7 @@ public class Article implements Parcelable {
         }
         return articleFields == null ? null : articleFields.articleThumbnailPath;
     }
+
 
     @NonNull
     public static DiffUtil.ItemCallback<Article> DIFF_CALLBACK = new DiffUtil.ItemCallback<Article>() {

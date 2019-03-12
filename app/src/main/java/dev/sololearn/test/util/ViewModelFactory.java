@@ -15,22 +15,22 @@ import dev.sololearn.test.repository.RepositoryProvider;
  */
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
-    private static volatile ViewModelFactory INSTANCE;
+    private static volatile ViewModelFactory viewModelFactory;
 
     private final ArticlesRepository articlesRepository;
     private Application application;
 
     public static ViewModelFactory getInstance(Application application) {
 
-        if (INSTANCE == null) {
+        if (viewModelFactory == null) {
             synchronized (ViewModelFactory.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new ViewModelFactory(
+                if (viewModelFactory == null) {
+                    viewModelFactory = new ViewModelFactory(
                             RepositoryProvider.provideArticlesRepository(application.getApplicationContext()), application);
                 }
             }
         }
-        return INSTANCE;
+        return viewModelFactory;
     }
 
     private ViewModelFactory(ArticlesRepository repository, Application application) {

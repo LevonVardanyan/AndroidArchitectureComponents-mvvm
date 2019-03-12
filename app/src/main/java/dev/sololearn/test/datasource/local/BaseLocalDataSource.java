@@ -33,4 +33,7 @@ public interface BaseLocalDataSource {
      */
     void getArticles(GetDataCallback getDataCallback);
 
+
+    LiveData<List<Article>> getArticles();
+
 }

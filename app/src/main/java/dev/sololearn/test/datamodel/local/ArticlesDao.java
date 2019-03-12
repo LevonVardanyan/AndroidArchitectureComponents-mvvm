@@ -37,6 +37,9 @@ public interface ArticlesDao {
     @Query(value = "SELECT * FROM articles_table ORDER BY publicationDate DESC")
     List<Article> getAllArticles();
 
+    @Query(value = "SELECT * FROM articles_table ORDER BY publicationDate DESC")
+    LiveData<List<Article>> getAllArticlesLiveData();
+
     @Query(value = "SELECT Count(*) FROM articles_table WHERE pinned = :pinned")
     int getPinnedItemsCountSync(boolean pinned);
 

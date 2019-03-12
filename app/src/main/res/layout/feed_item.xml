@@ -5,20 +5,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_card"
     style="@style/FeedItemCard"
+    android:layout_gravity="center_horizontal"
     android:layout_marginBottom="@dimen/feed_item_margin_bottom"
     app:cardElevation="@dimen/feed_item_elevation">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/root"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <ImageView
             android:id="@+id/article_thumbnail"
             android:layout_width="match_parent"
             android:layout_height="@dimen/feed_item_thumbnail_image_height"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="@+id/root"
             app:layout_constraintStart_toStartOf="@+id/root"
             app:layout_constraintTop_toTopOf="@+id/root" />
@@ -34,8 +36,6 @@
             android:textColor="@android:color/black"
             android:textSize="@dimen/feed_item_text_size"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/article_thumbnail"
-            app:layout_constraintTop_toBottomOf="@+id/article_thumbnail"
             tools:text="This is a test article" />
 
         <TextView
@@ -48,9 +48,6 @@
             android:layout_marginBottom="@dimen/feed_item_category_margin_top_bottom"
             android:textColor="@android:color/black"
             android:textSize="@dimen/feed_item_text_size"
-            app:layout_constraintBottom_toBottomOf="@+id/root"
-            app:layout_constraintLeft_toLeftOf="@+id/article_thumbnail"
-            app:layout_constraintTop_toBottomOf="@+id/article_title"
             tools:text="Test category" />
 
         <TextView
@@ -63,10 +60,7 @@
             android:layout_marginBottom="@dimen/feed_item_category_margin_top_bottom"
             android:textColor="@android:color/black"
             android:textSize="@dimen/feed_item_text_size"
-            app:layout_constraintBottom_toBottomOf="@+id/root"
-            app:layout_constraintStart_toEndOf="@+id/article_category"
-            app:layout_constraintTop_toBottomOf="@+id/article_title"
-            tools:text="Test category" />
+            tools:text="Publication date" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

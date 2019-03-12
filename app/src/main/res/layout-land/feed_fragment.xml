@@ -47,6 +47,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/pinned_articles"
+                    android:lines="1"
+                    android:singleLine="true"
                     android:textColor="@android:color/black"
                     android:textSize="22sp"
                     android:textStyle="bold" />
@@ -59,7 +61,6 @@
                     android:layout_marginTop="@dimen/pinned_items_recycler_view_margin_top"/>
 
             </LinearLayout>
-
 
             <View
                 android:id="@+id/vertical_divider"
@@ -94,10 +95,8 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/articles_recycler_view"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/root"
             app:layout_constraintEnd_toEndOf="@+id/root"
             app:layout_constraintStart_toEndOf="@+id/pinnies"

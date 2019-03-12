@@ -68,4 +68,9 @@ public class RoomLocalDataSource implements BaseLocalDataSource {
         });
     }
 
+    @Override
+    public LiveData<List<Article>> getArticles() {
+        return articlesDao.getAllArticlesLiveData();
+    }
+
 }

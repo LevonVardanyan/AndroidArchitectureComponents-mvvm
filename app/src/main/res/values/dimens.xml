@@ -10,7 +10,7 @@
 
 
     <!--feed item-->
-    <dimen name="feed_item_margin_start_end">4dp</dimen>
+    <dimen name="feed_item_margin_start_end">8dp</dimen>
     <dimen name="feed_item_margin_bottom">8dp</dimen>
     <dimen name="feed_item_thumbnail_image_height">200dp</dimen>
     <dimen name="feed_item_elevation">4dp</dimen>

@@ -9,10 +9,11 @@
     android:onClick="@{() ->listener.onArticleClicked(article)}"
     app:cardElevation="@dimen/feed_item_elevation">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/root"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <ImageView
             android:id="@+id/article_thumbnail"
@@ -26,7 +27,7 @@
 
         <TextView
             android:id="@+id/article_title"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/feed_item_title_margin_start_end"
             android:layout_marginTop="@dimen/feed_item_title_margin_top"
@@ -42,10 +43,12 @@
 
         <TextView
             android:id="@+id/article_category"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/feed_item_category_margin_top_bottom"
             android:layout_marginBottom="@dimen/feed_item_category_margin_top_bottom"
+            android:layout_marginEnd="@dimen/feed_item_category_margin_start_end"
+            android:layout_marginStart="@dimen/feed_item_category_margin_start_end"
             android:textColor="@android:color/black"
             android:textSize="@dimen/feed_item_text_size"
             app:layout_constraintBottom_toBottomOf="@+id/root"
@@ -54,5 +57,5 @@
             app:layout_constraintTop_toBottomOf="@+id/article_title"
             tools:text="Test category" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

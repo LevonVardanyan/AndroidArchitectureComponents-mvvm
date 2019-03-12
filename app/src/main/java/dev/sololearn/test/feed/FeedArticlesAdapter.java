@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import dev.sololearn.test.R;
 import dev.sololearn.test.datamodel.local.Article;
 import dev.sololearn.test.util.Constants;
+import dev.sololearn.test.util.Utils;
 
 /**
  * this adapter will manage Articles in Feed
@@ -67,17 +68,17 @@ public class FeedArticlesAdapter extends RecyclerView.Adapter<FeedArticlesAdapte
         if (article != null && article.articleFields != null) {
             holder.title.setText(article.title);
             holder.category.setText(article.category);
-            if (holder.publicationDate != null) {
-                holder.publicationDate.setText(article.publicationDate);
+            if (holder.publicationDate != null && article.publicationDate != null) {
+                holder.publicationDate.setText(Utils.convertFromString(article.publicationDate).toString());
             }
             holder.itemView.setOnClickListener(v -> clickArticle.setValue(new ClickArticleEvent(article, new View[]{holder.thumbnail})));
             if (article.savedForOffline && article.articleFields.articleThumbnailPath != null) {
                 File cacheFile = new File(context.getFilesDir(), article.articleFields.articleThumbnailPath);
-                requestManager.load(Uri.fromFile(cacheFile)).diskCacheStrategy(DiskCacheStrategy.NONE).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
-                        .skipMemoryCache(true).into(holder.thumbnail);
+                requestManager.load(Uri.fromFile(cacheFile)).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
+                        .into(holder.thumbnail);
             } else {
-                requestManager.load(article.articleFields.articleThumbnail).diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true).apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
+                requestManager.load(article.articleFields.articleThumbnail)
+                        .apply(RequestOptions.placeholderOf(R.drawable.image_place_holder))
                         .into(holder.thumbnail);
             }
         }

@@ -1,16 +1,21 @@
 package dev.sololearn.test.feed;
 
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Spinner;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.transition.Fade;
+import androidx.transition.Transition;
+import androidx.transition.TransitionInflater;
+import androidx.transition.TransitionListenerAdapter;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
@@ -20,6 +25,7 @@ import dev.sololearn.test.R;
 import dev.sololearn.test.feed.newitemscheck.CheckForNewItemsWorker;
 import dev.sololearn.test.openarticle.OpenArticleFragment;
 import dev.sololearn.test.util.Constants;
+import dev.sololearn.test.util.NetworkStateReceiver;
 import dev.sololearn.test.util.ViewModelFactory;
 
 import static androidx.core.view.ViewCompat.getTransitionName;
@@ -29,6 +35,7 @@ public class FeedActivity extends AppCompatActivity {
     private FeedFragment feedFragment;
     private OpenArticleFragment openArticleFragment;
     private FeedViewModel feedViewModel;
+    private NetworkStateReceiver networkStateReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +50,12 @@ public class FeedActivity extends AppCompatActivity {
                 openArticle(clickArticleEvent);
             }
         });
-        if (!feedFragment.isAdded()) {
+        if (!feedFragment.isAdded() && !openArticleFragment.isAdded()) {
             getSupportFragmentManager().beginTransaction().replace(R.id.root_container,
                     feedFragment, FeedFragment.TAG).addToBackStack(null).commit();
         }
 
-        feedViewModel.getPinUnPinEvent().observe(this, aBoolean -> openFeedFragment());
+        feedViewModel.getPinUnPinAction().observe(this, aBoolean -> openFeedFragment());
     }
 
     public static FeedViewModel obtainViewModel(FragmentActivity activity) {
@@ -56,11 +63,28 @@ public class FeedActivity extends AppCompatActivity {
         return ViewModelProviders.of(activity, factory).get(FeedViewModel.class);
     }
 
+    private void checkNetwork() {
+        networkStateReceiver = new NetworkStateReceiver();
+        networkStateReceiver.addListener(new NetworkStateReceiver.NetworkStateListener() {
+            @Override
+            public void onNetworkAvailable(NetworkStateReceiver receiver) {
+                feedViewModel.setNetworkState(NetworkStateReceiver.NetworkState.NETWORK_CONNECTED);
+            }
+
+            @Override
+            public void onNetworkDisconnected(NetworkStateReceiver receiver) {
+                feedViewModel.setNetworkState(NetworkStateReceiver.NetworkState.NETWORK_DIS_CONNECTED);
+            }
+        });
+        registerReceiver(networkStateReceiver, new IntentFilter(Constants.CONNECTIVITY_CHANGE_ACTION));
+    }
+
 
     @Override
     protected void onStart() {
         super.onStart();
         WorkManager.getInstance().cancelAllWorkByTag(CheckForNewItemsWorker.NAME);
+        checkNetwork();
     }
 
     @Override
@@ -74,6 +98,10 @@ public class FeedActivity extends AppCompatActivity {
         PeriodicWorkRequest checkForNewArticlesWorker = checkForNewArticlesWorkBuilder.build();
         WorkManager.getInstance().enqueueUniquePeriodicWork(CheckForNewItemsWorker.NAME,
                 ExistingPeriodicWorkPolicy.REPLACE, checkForNewArticlesWorker);
+
+        if (networkStateReceiver != null) {
+            unregisterReceiver(networkStateReceiver);
+        }
     }
 
     @Override
@@ -81,10 +109,8 @@ public class FeedActivity extends AppCompatActivity {
         if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
             finish();
             return;
-        } else {
-            getSupportFragmentManager().popBackStack();
         }
-//        super.onBackPressed();
+        super.onBackPressed();
     }
 
     private void initFeedFragment() {
@@ -103,7 +129,7 @@ public class FeedActivity extends AppCompatActivity {
 
     private void openFeedFragment() {
         if (openArticleFragment.isAdded()) {
-            getSupportFragmentManager().popBackStack();
+            onBackPressed();
         }
     }
 
@@ -122,8 +148,21 @@ public class FeedActivity extends AppCompatActivity {
         if (openArticleFragment.getArguments() == null) {
             openArticleFragment.setArguments(arguments);
         }
-        fragmentTransaction.setReorderingAllowed(true).replace(R.id.root_container, openArticleFragment, OpenArticleFragment.TAG).addToBackStack(null).commit();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            openArticleFragment.setSharedElementEnterTransition(TransitionInflater.from(this).inflateTransition(R.transition.image_transform));
+            openArticleFragment.setSharedElementReturnTransition(TransitionInflater.from(this).inflateTransition(R.transition.image_transform));
+        }
+        openArticleFragment.setEnterTransition(new Fade());
+        openArticleFragment.setExitTransition(new Fade());
+        ((Transition) openArticleFragment.getSharedElementReturnTransition()).addListener(new TransitionListenerAdapter() {
+            @Override
+            public void onTransitionEnd(@NonNull Transition transition) {
+                super.onTransitionEnd(transition);
+                feedViewModel.executrePendingPinUnPinArticle();
+            }
+        });
+        feedFragment.setExitTransition(new Fade());
+        fragmentTransaction.replace(R.id.root_container, openArticleFragment, OpenArticleFragment.TAG).addToBackStack(null).commit();
         clickArticleEvent.setAsHandled();
     }
-
 }
