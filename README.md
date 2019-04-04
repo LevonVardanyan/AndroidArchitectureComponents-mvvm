@@ -1,4 +1,4 @@
-# Project Features
+# Task requirements
 
 ·  The data should be pulled from [TheGuardianOpenPlatform](http://open-platform.theguardian.com/documentation/search), using JSON format. The articles should include a title, an image and category.
 
